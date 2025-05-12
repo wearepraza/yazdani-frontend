@@ -1,6 +1,6 @@
-// components
-import Image from "next/image";
+import { redirect } from "next/navigation"
 
 export default function Home() {
-  return <div></div>;
+  // Redirect to the home page
+  redirect("/home")
 }
