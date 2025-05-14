@@ -8,6 +8,7 @@ import { profileUser } from "@/lib/api/user/profileUser"
 
 export default function AccountPage() {
   const [profile, setProfile] = useState(null)
+  const [lastAddress, setLastAddress] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -20,6 +21,14 @@ export default function AccountPage() {
 
         if (resp && resp.data) {
           setProfile(resp.data)
+
+          // pick out the last element of addresses array, if exists
+          const addrs = resp.data.addresses
+          if (Array.isArray(addrs) && addrs.length > 0) {
+            setLastAddress(addrs[addrs.length - 1])
+          } else {
+            setLastAddress(null)
+          }
         } else {
           setError("پاسخ نامعتبر از سرور")
         }
@@ -126,12 +135,12 @@ export default function AccountPage() {
             </div>
           </div>
 
-          {/* address (only if provided) */}
-          {profile.address ? (
+          {/* last address */}
+          {lastAddress ? (
             <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <MapPin size={18} className="text-primary" />
-                <span>آدرس</span>
+                <span>آخرین آدرس</span>
               </h3>
               <div className="p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-start gap-3">
@@ -139,11 +148,11 @@ export default function AccountPage() {
                     <MapPin size={20} className="text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium mb-1">آدرس اصلی</p>
-                    <p className="text-gray-600">{profile.address.line}</p>
+                    <p className="font-medium mb-1">{lastAddress.title}</p>
+                    <p className="text-gray-600">{lastAddress.address_line}</p>
                     <div className="flex items-center gap-2 mt-2 text-sm">
                       <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
-                        کد پستی: {profile.address.postal_code}
+                        کد پستی: {lastAddress.postal_code}
                       </span>
                     </div>
                   </div>
