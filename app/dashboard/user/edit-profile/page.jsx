@@ -1,172 +1,187 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { User, Camera, Mail, Phone, MapPin, Lock, Eye, EyeOff, Save, ArrowLeft } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import {
+  User,
+  Camera,
+  Mail,
+  Phone,
+  MapPin,
+  Lock,
+  Eye,
+  EyeOff,
+  Save,
+  ArrowLeft,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
+import { profileUser } from "@/lib/api/user/profileUser.js"
+import { updateProfile } from "@/lib/api/user/updateProfileUser"
 
 export default function EditProfilePage() {
   // Profile data state
   const [profileData, setProfileData] = useState({
-    firstName: "کاربر",
-    lastName: "فونیکسو",
-    email: "example@email.com",
-    phone: "۰۹۱۲۳۴۵۶۷۸۹",
-    nationalCode: "۱۲۳۴۵۶۷۸۹۰",
-    address: "تهران، خیابان ولیعصر، پلاک ۱۲۳",
-    postalCode: "۱۲۳۴۵۶۷۸۹۰",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    nationalCode: "",
+    address: "",
+    postalCode: "",
   })
 
-  // Password change state
+  // Loading existing profile
+  const [loadingProfile, setLoadingProfile] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(null)
+  const [error, setError] = useState(null)
+
+  // Password / verification state (unchanged)…
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   })
-
-  // Verification code state for password change
   const [verificationStep, setVerificationStep] = useState(false)
   const [verificationCode, setVerificationCode] = useState(["", "", "", "", ""])
   const codeInputRefs = useRef([])
 
-  // UI state
+  // UI toggles (unchanged)…
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState(null)
   const fileInputRef = useRef(null)
 
-  // Handle profile image change
-  const handleImageClick = () => {
-    fileInputRef.current.click()
-  }
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      // Here you would typically upload the file to your server
-      // For now, we'll just show a success message
-      setSuccess("تصویر پروفایل با موفقیت بروزرسانی شد")
-      setTimeout(() => setSuccess(null), 3000)
+  // Fetch existing user profile on mount
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const resp = await profileUser()
+        console.log("profileUser response:", resp)
+        if (resp?.data) {
+          const data = resp.data
+          setProfileData((prev) => ({
+            ...prev,
+            firstName: data.name || "",
+            lastName: data.surname || "",
+            email: data.email || "",
+            phone: data.mobile_number || "",
+            // if your API returns national_code/address/postal_code add here:
+            // nationalCode: data.national_code || "",
+            // address: data.address || "",
+            // postalCode: data.postal_code || "",
+          }))
+        } else {
+          console.warn("Invalid profileUser response")
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoadingProfile(false)
+      }
     }
-  }
+    loadProfile()
+  }, [])
 
-  // Handle profile data change
+  // Common handlers (unchanged)…
   const handleProfileChange = (e) => {
     const { name, value } = e.target
     setProfileData((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Handle password data change
   const handlePasswordChange = (e) => {
     const { name, value } = e.target
     setPasswordData((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Handle verification code input
   const handleVerificationCodeChange = (index, value) => {
-    if (value.length > 1) {
-      // Only take the first character
-      value = value.charAt(0)
-    }
-
-    // Check if input is a number
-    if (value && !/^\d+$/.test(value)) {
-      return
-    }
-
-    // Update verification code state
+    if (value.length > 1) value = value.charAt(0)
+    if (value && !/^\d+$/.test(value)) return
     const newCode = [...verificationCode]
     newCode[index] = value
     setVerificationCode(newCode)
-
-    // Move to next input if a number was entered
-    if (value && index < 4) {
-      codeInputRefs.current[index + 1].focus()
-    }
+    if (value && index < 4) codeInputRefs.current[index + 1]?.focus()
   }
 
-  // Handle backspace in verification code inputs
   const handleVerificationCodeKeyDown = (index, e) => {
-    // If backspace and empty, move to previous input
     if (e.key === "Backspace" && !verificationCode[index] && index > 0) {
-      codeInputRefs.current[index - 1].focus()
+      codeInputRefs.current[index - 1]?.focus()
     }
   }
 
-  // Handle profile form submission
-  const handleProfileSubmit = (e) => {
+  // Profile submit → updateProfile API
+  const handleProfileSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const resp = await updateProfile(
+        profileData.firstName,
+        profileData.lastName,
+        profileData.email
+      )
+      console.log("updateProfile response:", resp)
+      if (resp.status === 200 && resp.data?.success !== false) {
+        setSuccess("اطلاعات پروفایل با موفقیت ذخیره شد")
+      } else {
+        setError(resp.data?.message || "خطا در بروزرسانی پروفایل")
+      }
+    } catch (err) {
+      console.error(err)
+      setError(err.message || "خطا در بروزرسانی پروفایل")
+    } finally {
       setLoading(false)
-      setSuccess("اطلاعات پروفایل با موفقیت بروزرسانی شد")
       setTimeout(() => setSuccess(null), 3000)
-    }, 1000)
+    }
   }
 
-  // Handle password change request
+  // Password flows (unchanged)…
   const handlePasswordRequest = (e) => {
     e.preventDefault()
-
-    // Validate passwords
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setError("رمز عبور جدید و تکرار آن مطابقت ندارند")
       return
     }
-
     if (passwordData.newPassword.length < 8) {
       setError("رمز عبور جدید باید حداقل ۸ کاراکتر باشد")
       return
     }
-
     setLoading(true)
     setError(null)
-
-    // Simulate API call to send verification code
     setTimeout(() => {
       setLoading(false)
       setVerificationStep(true)
     }, 1000)
   }
 
-  // Handle verification code submission
   const handleVerificationSubmit = (e) => {
     e.preventDefault()
-
-    // Validate verification code
-    const fullCode = verificationCode.join("")
-    if (fullCode.length !== 5) {
+    const full = verificationCode.join("")
+    if (full.length !== 5) {
       setError("کد تایید باید ۵ رقم باشد")
       return
     }
-
     setLoading(true)
     setError(null)
-
-    // Simulate API call to verify code and change password
     setTimeout(() => {
       setLoading(false)
       setVerificationStep(false)
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      })
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
       setSuccess("رمز عبور با موفقیت تغییر یافت")
       setTimeout(() => setSuccess(null), 3000)
     }, 1500)
   }
 
+  if (loadingProfile) {
+    return <p>در حال بارگذاری اطلاعات کاربر…</p>
+  }
+
   return (
     <div>
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">ویرایش پروفایل</h1>
@@ -183,7 +198,7 @@ export default function EditProfilePage() {
         </div>
       </div>
 
-      {/* Success message */}
+      {/* Success & Error */}
       {success && (
         <div className="mb-6 bg-green-50 text-green-700 p-4 rounded-lg border border-green-200 flex items-center">
           <div className="mr-2 bg-green-100 p-1 rounded-full">
@@ -192,8 +207,6 @@ export default function EditProfilePage() {
           <p>{success}</p>
         </div>
       )}
-
-      {/* Error message */}
       {error && (
         <div className="mb-6 bg-red-50 text-red-700 p-4 rounded-lg border border-red-200">
           <p>{error}</p>
@@ -208,209 +221,186 @@ export default function EditProfilePage() {
           </div>
           <button
             className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md hover:bg-gray-50 transition-colors"
-            onClick={handleImageClick}
+            onClick={() => fileInputRef.current.click()}
           >
             <Camera size={20} className="text-gray-700" />
           </button>
-          <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files[0]
+              if (file) {
+                setSuccess("تصویر پروفایل با موفقیت بروزرسانی شد")
+                setTimeout(() => setSuccess(null), 3000)
+              }
+            }}
+          />
         </div>
         <p className="text-sm text-gray-500">برای تغییر تصویر پروفایل کلیک کنید</p>
       </div>
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 mb-6">
-        <button
-          className={`px-4 py-2 font-medium text-sm ${
-            activeTab === "personal" ? "text-primary border-b-2 border-primary" : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("personal")}
-        >
-          اطلاعات شخصی
-        </button>
-        <button
-          className={`px-4 py-2 font-medium text-sm ${
-            activeTab === "address" ? "text-primary border-b-2 border-primary" : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("address")}
-        >
-          آدرس
-        </button>
-        <button
-          className={`px-4 py-2 font-medium text-sm ${
-            activeTab === "password" ? "text-primary border-b-2 border-primary" : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("password")}
-        >
-          تغییر رمز عبور
-        </button>
+        {["personal", "address", "password"].map((tab) => (
+          <button
+            key={tab}
+            className={`px-4 py-2 font-medium text-sm ${
+              activeTab === tab
+                ? "text-primary border-b-2 border-primary"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => {
+              setActiveTab(tab)
+              setError(null)
+              setSuccess(null)
+              setVerificationStep(false)
+            }}
+          >
+            {{
+              personal: "اطلاعات شخصی",
+              address: "آدرس",
+              password: "تغییر رمز عبور",
+            }[tab]}
+          </button>
+        ))}
       </div>
 
-      {/* Personal Information Form */}
+      {/* Personal Form */}
       {activeTab === "personal" && (
-        <form onSubmit={handleProfileSubmit}>
+        <form onSubmit={handleProfileSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                نام
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <User size={16} className="text-gray-400" />
+            {[
+              {
+                id: "firstName",
+                name: "firstName",
+                label: "نام",
+                icon: <User size={16} className="text-gray-400" />,
+                value: profileData.firstName,
+              },
+              {
+                id: "lastName",
+                name: "lastName",
+                label: "نام خانوادگی",
+                icon: <User size={16} className="text-gray-400" />,
+                value: profileData.lastName,
+              },
+              {
+                id: "email",
+                name: "email",
+                label: "ایمیل",
+                icon: <Mail size={16} className="text-gray-400" />,
+                value: profileData.email,
+                type: "email",
+                dir: "ltr",
+              },
+            ].map(({ id, name, label, icon, value, type = "text", dir }) => (
+              <div key={id} className="space-y-2">
+                <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+                  {label}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    {icon}
+                  </div>
+                  <Input
+                    id={id}
+                    name={name}
+                    type={type}
+                    value={value}
+                    onChange={handleProfileChange}
+                    className="pr-10"
+                    dir={dir}
+                  />
                 </div>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  value={profileData.firstName}
-                  onChange={handleProfileChange}
-                  className="pr-10"
-                />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                نام خانوادگی
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <User size={16} className="text-gray-400" />
-                </div>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  value={profileData.lastName}
-                  onChange={handleProfileChange}
-                  className="pr-10"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                ایمیل
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Mail size={16} className="text-gray-400" />
-                </div>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={profileData.email}
-                  onChange={handleProfileChange}
-                  className="pr-10"
-                  dir="ltr"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                شماره موبایل
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Phone size={16} className="text-gray-400" />
-                </div>
-                <Input
-                  id="phone"
-                  name="phone"
-                  value={profileData.phone}
-                  onChange={handleProfileChange}
-                  className="pr-10"
-                  dir="ltr"
-                  disabled
-                />
-              </div>
-              <p className="text-xs text-gray-500">برای تغییر شماره موبایل با پشتیبانی تماس بگیرید</p>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="nationalCode" className="block text-sm font-medium text-gray-700">
-                کد ملی
-              </label>
-              <Input
-                id="nationalCode"
-                name="nationalCode"
-                value={profileData.nationalCode}
-                onChange={handleProfileChange}
-                dir="ltr"
-              />
-            </div>
+            ))}
           </div>
-
-          <div className="mt-8">
-            <Button type="submit" className="w-full md:w-auto" disabled={loading}>
-              {loading ? "در حال ذخیره..." : "ذخیره تغییرات"}
-            </Button>
-          </div>
+          <Button type="submit" disabled={loading}>
+            {loading ? "در حال ذخیره..." : "ذخیره تغییرات"}
+          </Button>
         </form>
       )}
 
       {/* Address Form */}
       {activeTab === "address" && (
-        <form onSubmit={handleProfileSubmit}>
-          <div className="grid grid-cols-1 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                آدرس
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <MapPin size={16} className="text-gray-400" />
-                </div>
-                <Input
-                  id="address"
-                  name="address"
-                  value={profileData.address}
-                  onChange={handleProfileChange}
-                  className="pr-10"
-                />
+        <form onSubmit={handleProfileSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+              آدرس
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <MapPin size={16} className="text-gray-400" />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">
-                  کد پستی
-                </label>
-                <Input
-                  id="postalCode"
-                  name="postalCode"
-                  value={profileData.postalCode}
-                  onChange={handleProfileChange}
-                  dir="ltr"
-                />
-              </div>
+              <Input
+                id="address"
+                name="address"
+                value={profileData.address}
+                onChange={handleProfileChange}
+                className="pr-10"
+              />
             </div>
           </div>
-
-          <div className="mt-8">
-            <Button type="submit" className="w-full md:w-auto" disabled={loading}>
-              {loading ? "در حال ذخیره..." : "ذخیره تغییرات"}
-            </Button>
+          <div className="space-y-2">
+            <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">
+              کد پستی
+            </label>
+            <Input
+              id="postalCode"
+              name="postalCode"
+              value={profileData.postalCode}
+              onChange={handleProfileChange}
+              dir="ltr"
+            />
           </div>
+          <Button type="submit" disabled={loading}>
+            {loading ? "در حال ذخیره..." : "ذخیره تغییرات"}
+          </Button>
         </form>
       )}
 
-      {/* Password Change Form */}
+      {/* Password & Verification Tabs */}
       {activeTab === "password" && !verificationStep && (
-        <form onSubmit={handlePasswordRequest}>
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
-                رمز عبور فعلی
+        <form onSubmit={handlePasswordRequest} className="space-y-6">
+          {[
+            {
+              id: "currentPassword",
+              name: "currentPassword",
+              label: "رمز عبور فعلی",
+              show: showCurrentPassword,
+              toggle: () => setShowCurrentPassword(!showCurrentPassword),
+            },
+            {
+              id: "newPassword",
+              name: "newPassword",
+              label: "رمز عبور جدید",
+              show: showNewPassword,
+              toggle: () => setShowNewPassword(!showNewPassword),
+            },
+            {
+              id: "confirmPassword",
+              name: "confirmPassword",
+              label: "تکرار رمز عبور جدید",
+              show: showConfirmPassword,
+              toggle: () => setShowConfirmPassword(!showConfirmPassword),
+            },
+          ].map(({ id, name, label, show, toggle }) => (
+            <div key={id} className="space-y-2">
+              <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+                {label}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                   <Lock size={16} className="text-gray-400" />
                 </div>
                 <Input
-                  id="currentPassword"
-                  name="currentPassword"
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={passwordData.currentPassword}
+                  id={id}
+                  name={name}
+                  type={show ? "text" : "password"}
+                  value={passwordData[name]}
                   onChange={handlePasswordChange}
                   className="pr-10"
                   dir="ltr"
@@ -418,133 +408,49 @@ export default function EditProfilePage() {
                 <button
                   type="button"
                   className="absolute inset-y-0 left-0 flex items-center pl-3"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  onClick={toggle}
                 >
-                  {showCurrentPassword ? (
-                    <EyeOff size={16} className="text-gray-400" />
-                  ) : (
-                    <Eye size={16} className="text-gray-400" />
-                  )}
+                  {show ? <EyeOff size={16} className="text-gray-400" /> : <Eye size={16} className="text-gray-400" />}
                 </button>
               </div>
+              {id === "newPassword" && (
+                <p className="text-xs text-gray-500">رمز عبور باید حداقل ۸ کاراکتر باشد</p>
+              )}
             </div>
-
-            <div className="space-y-2">
-              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
-                رمز عبور جدید
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Lock size={16} className="text-gray-400" />
-                </div>
-                <Input
-                  id="newPassword"
-                  name="newPassword"
-                  type={showNewPassword ? "text" : "password"}
-                  value={passwordData.newPassword}
-                  onChange={handlePasswordChange}
-                  className="pr-10"
-                  dir="ltr"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 left-0 flex items-center pl-3"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                >
-                  {showNewPassword ? (
-                    <EyeOff size={16} className="text-gray-400" />
-                  ) : (
-                    <Eye size={16} className="text-gray-400" />
-                  )}
-                </button>
-              </div>
-              <p className="text-xs text-gray-500">رمز عبور باید حداقل ۸ کاراکتر باشد</p>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                تکرار رمز عبور جدید
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Lock size={16} className="text-gray-400" />
-                </div>
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={passwordData.confirmPassword}
-                  onChange={handlePasswordChange}
-                  className="pr-10"
-                  dir="ltr"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 left-0 flex items-center pl-3"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={16} className="text-gray-400" />
-                  ) : (
-                    <Eye size={16} className="text-gray-400" />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <Button type="submit" className="w-full md:w-auto" disabled={loading}>
-              {loading ? "در حال ارسال..." : "درخواست تغییر رمز عبور"}
-            </Button>
-          </div>
+          ))}
+          <Button type="submit" disabled={loading}>
+            {loading ? "در حال ارسال..." : "درخواست تغییر رمز عبور"}
+          </Button>
         </form>
       )}
-
-      {/* Verification Code Form */}
       {activeTab === "password" && verificationStep && (
-        <form onSubmit={handleVerificationSubmit}>
-          <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-lg font-medium mb-2">تایید کد ارسال شده</h3>
-              <p className="text-gray-500 mb-4">کد تایید به شماره موبایل شما ارسال شد. لطفا آن را وارد کنید.</p>
-
-              <div className="flex flex-row-reverse justify-center gap-2 mb-4">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Input
-                    key={index}
-                    type="text"
-                    value={verificationCode[4 - index]} // Reverse the index to start from left
-                    onChange={(e) => handleVerificationCodeChange(4 - index, e.target.value)} // Reverse the index
-                    onKeyDown={(e) => handleVerificationCodeKeyDown(4 - index, e)} // Reverse the index
-                    className="w-12 h-12 text-center text-lg"
-                    maxLength={1}
-                    ref={(el) => (codeInputRefs.current[4 - index] = el)} // Reverse the index
-                    inputMode="numeric"
-                  />
-                ))}
-              </div>
-
-              <p className="text-sm text-gray-500">
-                کد را دریافت نکردید؟{" "}
-                <button type="button" className="text-primary hover:text-primary/80">
-                  ارسال مجدد
-                </button>
-              </p>
+        <form onSubmit={handleVerificationSubmit} className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-lg font-medium mb-2">تایید کد ارسال شده</h3>
+            <p className="text-gray-500 mb-4">
+              کد تایید به شماره موبایل شما ارسال شد. لطفا آن را وارد کنید.
+            </p>
+            <div className="flex justify-center gap-2">
+              {verificationCode.map((dig, idx) => (
+                <Input
+                  key={idx}
+                  type="text"
+                  value={dig}
+                  onChange={(e) => handleVerificationCodeChange(idx, e.target.value)}
+                  onKeyDown={(e) => handleVerificationCodeKeyDown(idx, e)}
+                  className="w-12 h-12 text-center text-lg"
+                  maxLength={1}
+                  ref={(el) => (codeInputRefs.current[idx] = el)}
+                  inputMode="numeric"
+                />
+              ))}
             </div>
           </div>
-
-          <div className="mt-8 flex flex-col md:flex-row gap-4">
-            <Button type="submit" className="w-full md:w-auto" disabled={loading}>
+          <div className="flex gap-4">
+            <Button type="submit" disabled={loading}>
               {loading ? "در حال بررسی..." : "تایید و تغییر رمز عبور"}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full md:w-auto"
-              onClick={() => setVerificationStep(false)}
-              disabled={loading}
-            >
+            <Button variant="outline" onClick={() => setVerificationStep(false)} disabled={loading}>
               بازگشت
             </Button>
           </div>

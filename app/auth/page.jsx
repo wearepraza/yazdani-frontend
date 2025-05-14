@@ -83,7 +83,7 @@ export default function AuthPage() {
 
     try {
       const response = await sendCode(phone)
-      
+
       if (response.status === 200) {
         // Move to verification step
         setStep(2)
@@ -99,19 +99,19 @@ export default function AuthPage() {
 
   const handleVerificationSubmit = async (e) => {
     e.preventDefault()
-  
+
     const fullCode = getFullVerificationCode()
-  
+
     const error = validateVerificationCode(fullCode)
     setCodeError(error)
     if (error) return
-  
+
     setLoading(true)
     setError(null)
-  
+
     try {
       const response = await verifyCode(phone, fullCode)
-  
+
       if (response.status === 200 && response.data) {
         if (response.data.status === "new") {
           setIsRegistering(true)
@@ -162,7 +162,7 @@ export default function AuthPage() {
 
     try {
       const response = await register(phone, firstName, lastName, password, invitationCode)
-      
+
       if (response.error || !response.data || response.status !== 200) {
         setError(response.message || "خطا در ثبت نام. لطفا دوباره تلاش کنید.")
         return
@@ -172,7 +172,7 @@ export default function AuthPage() {
       if (response.data.success) {
         const token = response.data.token
         if (token) {
-          Cookies.set("authToken", token, { expires: 30 }) 
+          Cookies.set("authToken", token, { expires: 30 })
         }
         window.location.href = "/dashboard/user"
       } else {
@@ -291,32 +291,33 @@ export default function AuthPage() {
   const renderVerificationStep = () => (
     <form onSubmit={handleVerificationSubmit}>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex justify-center gap-2 py-6">
-            {/* Reverse the array to display inputs from left to right in RTL context */}
-            {[0, 1, 2, 3, 4].map((index) => (
-              <Input
-                key={index}
-                type="text"
-                value={verificationCode[index]}
-                onChange={(e) => handleVerificationCodeChange(index, e.target.value)}
-                onKeyDown={(e) => handleVerificationCodeKeyDown(index, e)}
-                className={`w-12 h-12 text-center text-lg shadow-sm transition-all focus:shadow-md ${codeError ? "border-destructive" : ""}`}
-                maxLength={1}
-                ref={(el) => (codeInputRefs.current[index] = el)}
-                inputMode="numeric"
-              />
-            ))}
-          </div>
-          {codeError && <p className="text-sm text-destructive">{codeError}</p>}
-          <p className="text-sm text-muted-foreground text-center">کد تایید به شماره {phone} ارسال شد</p>
+        <div
+          className="flex justify-center gap-2 py-6"
+          dir="ltr"               // ← force left-to-right here
+        >
+          {[0, 1, 2, 3, 4].map((index) => (
+            <Input
+              key={index}
+              type="text"
+              value={verificationCode[index]}
+              onChange={(e) => handleVerificationCodeChange(index, e.target.value)}
+              onKeyDown={(e) => handleVerificationCodeKeyDown(index, e)}
+              className={`w-12 h-12 text-center text-lg shadow-sm transition-all focus:shadow-md ${codeError ? "border-destructive" : ""}`}
+              maxLength={1}
+              ref={(el) => (codeInputRefs.current[index] = el)}
+              inputMode="numeric"
+              dir="ltr"           // ← ensure each box is also LTR
+            />
+          ))}
         </div>
+        {codeError && <p className="text-sm text-destructive">{codeError}</p>}
+        <p className="text-sm text-muted-foreground text-center">
+          کد تایید به شماره {phone} ارسال شد
+        </p>
       </CardContent>
       <CardFooter className="flex flex-col space-y-3 pt-2">
         <Button type="submit" className="w-full shadow-sm hover:shadow-md transition-all" disabled={loading}>
-          {loading ? (
-            "در حال بررسی..."
-          ) : (
+          {loading ? "در حال بررسی..." : (
             <>
               <ArrowLeft className="h-4 w-4 ml-2" />
               تایید
