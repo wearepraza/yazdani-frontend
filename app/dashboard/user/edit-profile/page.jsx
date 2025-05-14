@@ -16,11 +16,14 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
+
+// API helpers
 import { profileUser } from "@/lib/api/user/profileUser.js"
-import { updateProfile } from "@/lib/api/user/updateProfileUser"
+import { updateProfile } from "@/lib/api/user/updateProfileUser.js"
+import { updateAddress } from "@/lib/api/user/updateAddressUser"
 
 export default function EditProfilePage() {
-  // Profile data state
+  // 1) State for user data
   const [profileData, setProfileData] = useState({
     firstName: "",
     lastName: "",
@@ -30,14 +33,12 @@ export default function EditProfilePage() {
     address: "",
     postalCode: "",
   })
-
-  // Loading existing profile
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(null)
   const [error, setError] = useState(null)
 
-  // Password / verification state (unchanged)…
+  // 2) Password & verification state
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -47,76 +48,70 @@ export default function EditProfilePage() {
   const [verificationCode, setVerificationCode] = useState(["", "", "", "", ""])
   const codeInputRefs = useRef([])
 
-  // UI toggles (unchanged)…
+  // 3) UI toggles
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
   const fileInputRef = useRef(null)
 
-  // Fetch existing user profile on mount
-  useEffect(() => {
-    async function loadProfile() {
-      try {
-        const resp = await profileUser()
-        console.log("profileUser response:", resp)
-        if (resp?.data) {
-          const data = resp.data
-          setProfileData((prev) => ({
-            ...prev,
-            firstName: data.name || "",
-            lastName: data.surname || "",
-            email: data.email || "",
-            phone: data.mobile_number || "",
-            // if your API returns national_code/address/postal_code add here:
-            // nationalCode: data.national_code || "",
-            // address: data.address || "",
-            // postalCode: data.postal_code || "",
-          }))
-        } else {
-          console.warn("Invalid profileUser response")
-        }
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoadingProfile(false)
+  // 4) Load user on mount and after updates
+  const loadProfile = async () => {
+    setLoadingProfile(true)
+    try {
+      const resp = await profileUser()
+      console.log("profileUser response:", resp)
+      if (resp?.data) {
+        const d = resp.data
+        setProfileData({
+          firstName: d.name || "",
+          lastName: d.surname || "",
+          email: d.email || "",
+          phone: d.mobile_number || "",
+          nationalCode: d.national_code || "",
+          address: d.address_line || "",
+          postalCode: d.postal_code || "",
+        })
       }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoadingProfile(false)
     }
+  }
+
+  useEffect(() => {
     loadProfile()
   }, [])
 
-  // Common handlers (unchanged)…
+  // 5) Handlers
   const handleProfileChange = (e) => {
     const { name, value } = e.target
-    setProfileData((prev) => ({ ...prev, [name]: value }))
+    setProfileData((p) => ({ ...p, [name]: value }))
   }
-
   const handlePasswordChange = (e) => {
     const { name, value } = e.target
-    setPasswordData((prev) => ({ ...prev, [name]: value }))
+    setPasswordData((p) => ({ ...p, [name]: value }))
   }
-
-  const handleVerificationCodeChange = (index, value) => {
-    if (value.length > 1) value = value.charAt(0)
-    if (value && !/^\d+$/.test(value)) return
-    const newCode = [...verificationCode]
-    newCode[index] = value
-    setVerificationCode(newCode)
-    if (value && index < 4) codeInputRefs.current[index + 1]?.focus()
+  const handleVerificationCodeChange = (i, val) => {
+    if (val.length > 1) val = val.charAt(0)
+    if (val && !/^\d+$/.test(val)) return
+    const next = [...verificationCode]
+    next[i] = val
+    setVerificationCode(next)
+    if (val && i < 4) codeInputRefs.current[i + 1]?.focus()
   }
-
-  const handleVerificationCodeKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !verificationCode[index] && index > 0) {
-      codeInputRefs.current[index - 1]?.focus()
+  const handleVerificationCodeKeyDown = (i, e) => {
+    if (e.key === "Backspace" && !verificationCode[i] && i > 0) {
+      codeInputRefs.current[i - 1]?.focus()
     }
   }
 
-  // Profile submit → updateProfile API
+  // 6) Submit updated profile info
   const handleProfileSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
-
     try {
       const resp = await updateProfile(
         profileData.firstName,
@@ -138,7 +133,36 @@ export default function EditProfilePage() {
     }
   }
 
-  // Password flows (unchanged)…
+  // 7) Submit updated address info, then reload profile
+  const handleAddressSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    try {
+      const resp = await updateAddress(
+        null,
+        "آدرس اصلی",
+        profileData.address,
+        profileData.postalCode
+      )
+      console.log("updateAddress response:", resp)
+      if (resp.status === 200 && resp.data?.success !== false) {
+        setSuccess("آدرس با موفقیت بروزرسانی شد")
+        // reload so address_line & postal_code in profileData are refreshed
+        await loadProfile()
+      } else {
+        setError(resp.data?.message || "خطا در بروزرسانی آدرس")
+      }
+    } catch (err) {
+      console.error(err)
+      setError(err.message || "خطا در بروزرسانی آدرس")
+    } finally {
+      setLoading(false)
+      setTimeout(() => setSuccess(null), 3000)
+    }
+  }
+
+  // 8) Password flows (unchanged)
   const handlePasswordRequest = (e) => {
     e.preventDefault()
     if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -156,7 +180,6 @@ export default function EditProfilePage() {
       setVerificationStep(true)
     }, 1000)
   }
-
   const handleVerificationSubmit = (e) => {
     e.preventDefault()
     const full = verificationCode.join("")
@@ -175,9 +198,7 @@ export default function EditProfilePage() {
     }, 1500)
   }
 
-  if (loadingProfile) {
-    return <p>در حال بارگذاری اطلاعات کاربر…</p>
-  }
+  if (loadingProfile) return <p>در حال بارگذاری اطلاعات کاربر…</p>
 
   return (
     <div>
@@ -326,7 +347,7 @@ export default function EditProfilePage() {
 
       {/* Address Form */}
       {activeTab === "address" && (
-        <form onSubmit={handleProfileSubmit} className="space-y-6">
+        <form onSubmit={handleAddressSubmit} className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="address" className="block text-sm font-medium text-gray-700">
               آدرس
@@ -357,12 +378,12 @@ export default function EditProfilePage() {
             />
           </div>
           <Button type="submit" disabled={loading}>
-            {loading ? "در حال ذخیره..." : "ذخیره تغییرات"}
+            {loading ? "در حال ذخیره..." : "ذخیره آدرس"}
           </Button>
         </form>
       )}
 
-      {/* Password & Verification Tabs */}
+      {/* Password & Verification Forms */}
       {activeTab === "password" && !verificationStep && (
         <form onSubmit={handlePasswordRequest} className="space-y-6">
           {[
