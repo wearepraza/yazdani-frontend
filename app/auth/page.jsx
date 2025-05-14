@@ -13,6 +13,7 @@ import {
   validatePostalCode,
 } from "@/lib/validation"
 import { ArrowLeft, User } from "lucide-react"
+import Cookies from "js-cookie"
 
 // First, import the SearchableSelect component and the Iran states and cities data
 import { SearchableSelect } from "@/components/ui/searchable-select"
@@ -98,24 +99,33 @@ export default function AuthPage() {
 
   const handleVerificationSubmit = async (e) => {
     e.preventDefault()
-
-    // Get full verification code
+  
     const fullCode = getFullVerificationCode()
-
-    // Validate verification code
+  
     const error = validateVerificationCode(fullCode)
     setCodeError(error)
     if (error) return
-
+  
     setLoading(true)
     setError(null)
-
+  
     try {
       const response = await verifyCode(phone, fullCode)
-      if (response.data.status === "new") {
-        setIsRegistering(true)
-      } else if (response.status === 200 || response.status === "ok") {
-
+  
+      if (response.status === 200 && response.data) {
+        if (response.data.status === "new") {
+          setIsRegistering(true)
+        } else if (response.data.status === "existing") {
+          const token = response.data.token
+          if (token) {
+            Cookies.set("authToken", token, { expires: 30 })
+            window.location.href = "/dashboard/user"
+          } else {
+            setError("توکن دریافت نشد. لطفا دوباره تلاش کنید.")
+          }
+        } else {
+          setError("وضعیت کاربر نامشخص است.")
+        }
       } else {
         setError(response.message || "کد تایید نامعتبر است. لطفا دوباره تلاش کنید.")
       }
@@ -155,6 +165,10 @@ export default function AuthPage() {
 
       // Only redirect if we have a successful response
       if (response.data.success) {
+        const token = response.data.token
+        if (token) {
+          Cookies.set("authToken", token, { expires: 30 }) 
+        }
         window.location.href = "/dashboard/user"
       } else {
         setError(response.data.message || "خطا در ثبت نام. لطفا دوباره تلاش کنید.")

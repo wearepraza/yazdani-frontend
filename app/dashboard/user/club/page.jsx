@@ -251,14 +251,14 @@ export default function ClubPage() {
             <h3 className="font-bold mb-2">دعوت از دوستان</h3>
             <p className="text-gray-600 text-sm">با دعوت هر دوست، ۱ ستاره و ۱۰ سکه دریافت کنید.</p>
           </div>
-
+{/* 
           <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="bg-purple-50 p-3 rounded-full w-fit mb-4">
               <ShoppingBag className="h-6 w-6 text-purple-500" />
             </div>
             <h3 className="font-bold mb-2">خرید از شبکه</h3>
             <p className="text-gray-600 text-sm">از خریدهای انجام شده توسط شبکه ۵ سطحی خود امتیاز کسب کنید.</p>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

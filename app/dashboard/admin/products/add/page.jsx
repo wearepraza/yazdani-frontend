@@ -302,37 +302,39 @@ export default function AddProductPage() {
             </div>
 
             <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
-              <h2 className="text-lg font-bold mb-4">وضعیت انتشار</h2>
+  <h2 className="text-lg font-bold mb-4">وضعیت انتشار</h2>
 
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="status-published"
-                    name="status"
-                    value="published"
-                    className="h-4 w-4 text-primary border-gray-300 focus:ring-primary"
-                    defaultChecked
-                  />
-                  <label htmlFor="status-published" className="mr-2 block text-sm text-gray-700">
-                    منتشر شده
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="status-draft"
-                    name="status"
-                    value="draft"
-                    className="h-4 w-4 text-primary border-gray-300 focus:ring-primary"
-                  />
-                  <label htmlFor="status-draft" className="mr-2 block text-sm text-gray-700">
-                    پیش‌نویس
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
+  <div className="space-y-3">
+    <div className="flex items-center">
+      <input
+        type="radio"
+        id="status-published"
+        name="status"
+        value="published"
+        checked={productData.status === "published"}
+        onChange={handleChange}
+        className="h-4 w-4 text-primary border-gray-300 focus:ring-primary"
+      />
+      <label htmlFor="status-published" className="mr-2 block text-sm text-gray-700">
+        منتشر شده
+      </label>
+    </div>
+    <div className="flex items-center">
+      <input
+        type="radio"
+        id="status-draft"
+        name="status"
+        value="draft"
+        checked={productData.status === "draft"}
+        onChange={handleChange}
+        className="h-4 w-4 text-primary border-gray-300 focus:ring-primary"
+      />
+      <label htmlFor="status-draft" className="mr-2 block text-sm text-gray-700">
+        پیش‌نویس
+      </label>
+    </div>
+  </div>
+</div>          </div>
         </div>
 
         <div className="mt-6 flex justify-end">

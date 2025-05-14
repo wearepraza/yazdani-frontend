@@ -1,61 +1,43 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Filter, Plus, Edit, Trash, Eye, ImageOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-
-// Sample products data
-const sampleProducts = [
-  {
-    id: 1,
-    title: "گوشی موبایل سامسونگ گلکسی S23 Ultra",
-    price: "۴۵,۹۰۰,۰۰۰",
-    category: "موبایل",
-    stock: 15,
-    status: "موجود",
-  },
-  {
-    id: 2,
-    title: "لپ تاپ اپل مک‌بوک پرو M2",
-    price: "۸۵,۵۰۰,۰۰۰",
-    category: "لپ تاپ",
-    stock: 8,
-    status: "موجود",
-  },
-  {
-    id: 3,
-    title: "هدفون بی سیم سونی WH-1000XM5",
-    price: "۱۲,۸۰۰,۰۰۰",
-    category: "صوتی",
-    stock: 20,
-    status: "موجود",
-  },
-  {
-    id: 4,
-    title: "ساعت هوشمند اپل واچ سری ۸",
-    price: "۲۲,۵۰۰,۰۰۰",
-    category: "پوشیدنی",
-    stock: 0,
-    status: "ناموجود",
-  },
-  {
-    id: 5,
-    title: "تبلت سامسونگ گلکسی Tab S8",
-    price: "۱۸,۵۰۰,۰۰۰",
-    category: "تبلت",
-    stock: 5,
-    status: "کم موجود",
-  },
-]
-
+import { listProducts } from "@/lib/api/main/listProducts"
+import { detailsProducts } from "@/lib/api/main/detailsProducts"
+import { BASE_URL } from "@/lib/api/config"
+import Image from "next/image"
 export default function ProductsPage() {
-  const [products, setProducts] = useState(sampleProducts)
+  const [products, setProducts] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [loading, setLoading] = useState(true)
 
   const filteredProducts = products.filter(
-    (product) => product.title.includes(searchTerm) || product.category.includes(searchTerm),
+    (product) =>
+      product.title.includes(searchTerm) || product.category.name.includes(searchTerm),
   )
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true)
+      const response = await listProducts()
+  
+      const updated = response.data.map((product) => {
+        let status = "نامشخص"
+        if (product.stock === 0) status = "ناموجود"
+        else if (product.stock < 5) status = "کم موجود"
+        else status = "موجود"
+        return { ...product, status }
+      })
+  
+      setProducts(updated)
+      setLoading(false)
+    }
+  
+    fetchProducts()
+  }, [])
+  
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -76,6 +58,7 @@ export default function ProductsPage() {
 
   return (
     <div>
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">محصولات</h1>
@@ -91,7 +74,7 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Search and Filter */}
+      {/* Search */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -111,6 +94,11 @@ export default function ProductsPage() {
       </div>
 
       {/* Products Table */}
+      {loading ? (
+  <div className="flex justify-center items-center py-20">
+    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+  </div>
+) : (
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -131,14 +119,14 @@ export default function ProductsPage() {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
-                          <ImageOff size={16} className="text-gray-400" />
+                          <Image src={`${BASE_URL}${product.image_path}`} alt="product" width={16} height={16} className="text-gray-400" />
                         </div>
                         <span className="font-medium text-gray-900">{product.title}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-600">{product.category}</td>
+                    <td className="px-4 py-4 text-sm text-gray-600">{product.category.name}</td>
                     <td className="px-4 py-4 text-sm font-medium text-gray-900">{product.price} تومان</td>
-                    <td className="px-4 py-4 text-sm text-gray-600">{product.stock} عدد</td>
+                    <td className="px-4 py-4 text-sm text-gray-600">{product.inventory} عدد</td>
                     <td className="px-4 py-4">
                       <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(product.status)}`}
@@ -173,7 +161,7 @@ export default function ProductsPage() {
               ) : (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                    هیچ محصولی یافت نشد.
+                    محصولی موجود نیست.
                   </td>
                 </tr>
               )}
@@ -181,6 +169,8 @@ export default function ProductsPage() {
           </table>
         </div>
       </div>
+    )
+      }
 
       {/* Pagination */}
       <div className="flex justify-between items-center mt-6">

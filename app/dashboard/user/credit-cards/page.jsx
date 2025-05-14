@@ -287,7 +287,10 @@ export default function CreditCardsPage() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Gift className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-gray-700">سقف پاداش: {card.rewardCeiling}</span>
+                    <span className="text-gray-700">سقف پاداش:
+                    {`${card.rewardCeiling} تومان`}
+
+                       </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Percent className="h-3.5 w-3.5 text-primary" />

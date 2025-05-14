@@ -1,7 +1,10 @@
+"use client"
 import Link from "next/link"
 import EnhancedProductCard from "@/components/enhanced-product-card"
 import { Footer } from "@/components/footer"
-
+import {listProducts} from "@/lib/api/main/listProducts"
+import { listCategory } from "@/lib/api/main/listCategory";
+import { useEffect } from "react"
 // Sample data for products
 const featuredProducts = [
   {
@@ -189,6 +192,30 @@ const popularProducts = [
 ]
 
 export default function HomePage() {
+
+useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const response = await listProducts();
+      console.log(response);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+  const fetchCategories = async () => {
+    try {
+      const response = await listCategory();
+      console.log(response);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
+  fetchProducts();
+  fetchCategories();
+}, []);
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
