@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react"
 import {
   User,
-  Camera,
   Mail,
   Phone,
   MapPin,
@@ -20,7 +19,7 @@ import Link from "next/link"
 // API helpers
 import { profileUser } from "@/lib/api/user/profileUser.js"
 import { updateProfile } from "@/lib/api/user/updateProfileUser.js"
-import { updateAddress } from "@/lib/api/user/updateAddressUser"
+import { updateAddress } from "@/lib/api/user/updateAddressUser.js"
 
 export default function EditProfilePage() {
   // 1) State for user data
@@ -48,14 +47,13 @@ export default function EditProfilePage() {
   const [verificationCode, setVerificationCode] = useState(["", "", "", "", ""])
   const codeInputRefs = useRef([])
 
-  // 3) UI toggles
+  // 3) UI toggles & tabs
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
-  const fileInputRef = useRef(null)
 
-  // 4) Load user on mount and after updates
+  // 4) Load user on mount & after updates
   const loadProfile = async () => {
     setLoadingProfile(true)
     try {
@@ -63,14 +61,17 @@ export default function EditProfilePage() {
       console.log("profileUser response:", resp)
       if (resp?.data) {
         const d = resp.data
+        // pick last address if exists
+        const addrs = Array.isArray(d.addresses) ? d.addresses : []
+        const lastAddr = addrs.length > 0 ? addrs[addrs.length - 1] : {}
         setProfileData({
           firstName: d.name || "",
           lastName: d.surname || "",
           email: d.email || "",
           phone: d.mobile_number || "",
           nationalCode: d.national_code || "",
-          address: d.address_line || "",
-          postalCode: d.postal_code || "",
+          address: lastAddr.address_line || "",
+          postalCode: lastAddr.postal_code || "",
         })
       }
     } catch (err) {
@@ -85,13 +86,13 @@ export default function EditProfilePage() {
   }, [])
 
   // 5) Handlers
-  const handleProfileChange = (e) => {
+  const handleProfileChange = e => {
     const { name, value } = e.target
-    setProfileData((p) => ({ ...p, [name]: value }))
+    setProfileData(p => ({ ...p, [name]: value }))
   }
-  const handlePasswordChange = (e) => {
+  const handlePasswordChange = e => {
     const { name, value } = e.target
-    setPasswordData((p) => ({ ...p, [name]: value }))
+    setPasswordData(p => ({ ...p, [name]: value }))
   }
   const handleVerificationCodeChange = (i, val) => {
     if (val.length > 1) val = val.charAt(0)
@@ -108,7 +109,7 @@ export default function EditProfilePage() {
   }
 
   // 6) Submit updated profile info
-  const handleProfileSubmit = async (e) => {
+  const handleProfileSubmit = async e => {
     e.preventDefault()
     setLoading(true)
     setError(null)
@@ -133,8 +134,8 @@ export default function EditProfilePage() {
     }
   }
 
-  // 7) Submit updated address info, then reload profile
-  const handleAddressSubmit = async (e) => {
+  // 7) Submit updated address info & reload
+  const handleAddressSubmit = async e => {
     e.preventDefault()
     setLoading(true)
     setError(null)
@@ -148,7 +149,6 @@ export default function EditProfilePage() {
       console.log("updateAddress response:", resp)
       if (resp.status === 200 && resp.data?.success !== false) {
         setSuccess("آدرس با موفقیت بروزرسانی شد")
-        // reload so address_line & postal_code in profileData are refreshed
         await loadProfile()
       } else {
         setError(resp.data?.message || "خطا در بروزرسانی آدرس")
@@ -162,8 +162,8 @@ export default function EditProfilePage() {
     }
   }
 
-  // 8) Password flows (unchanged)
-  const handlePasswordRequest = (e) => {
+  // 8) Password flows
+  const handlePasswordRequest = e => {
     e.preventDefault()
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setError("رمز عبور جدید و تکرار آن مطابقت ندارند")
@@ -180,7 +180,7 @@ export default function EditProfilePage() {
       setVerificationStep(true)
     }, 1000)
   }
-  const handleVerificationSubmit = (e) => {
+  const handleVerificationSubmit = e => {
     e.preventDefault()
     const full = verificationCode.join("")
     if (full.length !== 5) {
@@ -234,38 +234,9 @@ export default function EditProfilePage() {
         </div>
       )}
 
-      {/* Profile Image */}
-      <div className="flex flex-col items-center mb-8">
-        <div className="relative mb-4">
-          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white shadow-md">
-            <User size={64} />
-          </div>
-          <button
-            className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md hover:bg-gray-50 transition-colors"
-            onClick={() => fileInputRef.current.click()}
-          >
-            <Camera size={20} className="text-gray-700" />
-          </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files[0]
-              if (file) {
-                setSuccess("تصویر پروفایل با موفقیت بروزرسانی شد")
-                setTimeout(() => setSuccess(null), 3000)
-              }
-            }}
-          />
-        </div>
-        <p className="text-sm text-gray-500">برای تغییر تصویر پروفایل کلیک کنید</p>
-      </div>
-
       {/* Tabs */}
       <div className="flex border-b border-gray-200 mb-6">
-        {["personal", "address", "password"].map((tab) => (
+        {["personal", "address", "password"].map(tab => (
           <button
             key={tab}
             className={`px-4 py-2 font-medium text-sm ${
@@ -293,7 +264,7 @@ export default function EditProfilePage() {
       {activeTab === "personal" && (
         <form onSubmit={handleProfileSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
+            {[  
               {
                 id: "firstName",
                 name: "firstName",
@@ -431,7 +402,11 @@ export default function EditProfilePage() {
                   className="absolute inset-y-0 left-0 flex items-center pl-3"
                   onClick={toggle}
                 >
-                  {show ? <EyeOff size={16} className="text-gray-400" /> : <Eye size={16} className="text-gray-400" />}
+                  {show ? (
+                    <EyeOff size={16} className="text-gray-400" />
+                  ) : (
+                    <Eye size={16} className="text-gray-400" />
+                  )}
                 </button>
               </div>
               {id === "newPassword" && (
@@ -457,11 +432,11 @@ export default function EditProfilePage() {
                   key={idx}
                   type="text"
                   value={dig}
-                  onChange={(e) => handleVerificationCodeChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleVerificationCodeKeyDown(idx, e)}
+                  onChange={e => handleVerificationCodeChange(idx, e.target.value)}
+                  onKeyDown={e => handleVerificationCodeKeyDown(idx, e)}
                   className="w-12 h-12 text-center text-lg"
                   maxLength={1}
-                  ref={(el) => (codeInputRefs.current[idx] = el)}
+                  ref={el => (codeInputRefs.current[idx] = el)}
                   inputMode="numeric"
                 />
               ))}
