@@ -4,6 +4,7 @@ import { useState } from "react"
 import { CreditCard, Check, ArrowRight, User, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import React from "react"
 
 // Sample credit cards data
 const creditCards = [
@@ -53,7 +54,7 @@ export default function PurchaseCreditCardPage({ params }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const card = creditCards.find((c) => c.id === params.id) || creditCards[0]
+  const card = creditCards.find((c) => c.id === React.use(params).id) || creditCards[0]
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target

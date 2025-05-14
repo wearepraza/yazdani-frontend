@@ -1,7 +1,12 @@
+
+"use client"
 import { CreditCard, Check, Info, ShieldCheck, Clock, Zap, AlertCircle, Gift, Percent } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-
+import { useEffect,useState } from "react"
+import { myCards } from "@/lib/api/user/cards/myCards"
+import { allCards } from "@/lib/api/user/cards/allCards"
+import moment from "moment-jalaali"
 // Updated credit cards data based on the new requirements
 const creditCards = [
   {
@@ -127,22 +132,75 @@ const creditCards = [
   },
 ]
 
-// Sample user cards
-const userCards = [
-  {
-    id: 101,
-    title: "کارت اعتباری ۵۰۰,۰۰۰ تومانی",
-    cardNumber: "۶۲۱۹-۸۶۱۰-۳۴۵۲-۱۲۳۴",
-    credit: "۱,۵۰۰,۰۰۰",
-    remaining: "۹۵۰,۰۰۰",
-    expiry: "۱۴۰۳/۰۸/۱۵",
-    status: "فعال",
-    color: "from-amber-500 to-yellow-500",
-    daysLeft: 45,
-  },
-]
+
 
 export default function CreditCardsPage() {
+  const [userCards, setUserCards] = useState([])
+
+
+  const convertToJalali = (dateString) => {
+    return moment(dateString, "YYYY-MM-DD").format("jYYYY/jMM/jDD")
+  }
+  
+  const calcDaysLeft = (dateString) => {
+    const today = moment()
+    const expiry = moment(dateString, "YYYY-MM-DD")
+    return expiry.diff(today, "days")
+  }
+  
+  useEffect(() => {
+    const fetchCards = async () => {
+      try {
+        const response = await myCards()
+        const cards = response?.data?.my_cards || []
+  
+        const formatted = cards.map((card, index) => ({
+          id: index + 1,
+          title: `کارت اعتباری ${card.amount.toLocaleString()} تومانی`,
+          cardNumber: "۶۲۱۹-****-****-۱۲۳۴",
+          credit: `${card.credit.toLocaleString()}`,
+          remaining: `${card.card_amount.toLocaleString()}`,
+          expiry: convertToJalali(card.expires_at), 
+          status: "فعال",
+          daysLeft: calcDaysLeft(card.expires_at),
+          color: "from-amber-500 to-yellow-500", 
+        }))
+  
+        setUserCards(formatted)
+      } catch (error) {
+        console.error("Error fetching credit cards:", error)
+      }
+    }
+  
+    const fetchAllCards = async () => {
+      try {
+        const response = await allCards()
+        // const cards = response?.data?.my_cards || []
+  
+        // const formatted = cards.map((card, index) => ({
+        //   id: index + 1,
+        //   title: `کارت اعتباری ${card.amount.toLocaleString()} تومانی`,
+        //   cardNumber: "۶۲۱۹-****-****-۱۲۳۴",
+        //   credit: `${card.credit.toLocaleString()}`,
+        //   remaining: `${card.card_amount.toLocaleString()}`,
+        //   expiry: convertToJalali(card.expires_at), 
+        //   status: "فعال",
+        //   daysLeft: calcDaysLeft(card.expires_at),
+        //   color: "from-amber-500 to-yellow-500", 
+        // }))
+  
+        // setUserCards(formatted)
+      } catch (error) {
+        console.error("Error fetching credit cards:", error)
+      }
+    }
+    
+    fetchCards()
+    fetchAllCards()
+
+  }, [])
+
+
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">

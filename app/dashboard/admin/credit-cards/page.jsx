@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { CreditCard, Plus, Edit, Trash, Eye, Search, Filter, X, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import {myCards} from "@/lib/api/user/cards/myCards"
 
 // Updated credit cards data based on the new requirements
 const sampleCreditCards = [
@@ -143,6 +144,20 @@ export default function CreditCardsAdminPage() {
     features: ["شارژ ۳ برابری اعتبار", "مشارکت در خرید"],
     status: "فعال",
   })
+
+useEffect(() => {
+ const fetchCards = async () => {
+    try {
+      const response = await myCards()
+      // setCreditCards(response.data)
+      console.log(response)
+    } catch (error) {
+      console.error("Error fetching credit cards:", error)
+    }
+  }
+  fetchCards()
+ 
+}, []);
 
   const filteredCards = creditCards.filter((card) => card.title.includes(searchTerm) || card.price.includes(searchTerm))
 

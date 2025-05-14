@@ -56,11 +56,11 @@ export default function AdminDashboardLayout({ children }) {
       href: "/dashboard/admin/products",
       icon: ShoppingBag,
     },
-    {
-      title: "کارت‌های اعتباری",
-      icon: CreditCard,
-      href: "/dashboard/admin/credit-cards",
-    },
+    // {
+    //   title: "کارت‌های اعتباری",
+    //   icon: CreditCard,
+    //   href: "/dashboard/admin/credit-cards",
+    // },
     {
       title: "افزودن محصول",
       href: "/dashboard/admin/products/add",
