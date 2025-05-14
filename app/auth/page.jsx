@@ -17,6 +17,9 @@ import { ArrowLeft, User } from "lucide-react"
 // First, import the SearchableSelect component and the Iran states and cities data
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import { iranStatesAndCities } from "@/lib/iran-states-cities"
+import { sendCode } from "@/lib/api/auth/sendCode"
+import { verifyCode } from "@/lib/api/auth/verifyCode"
+import { register } from "@/lib/api/auth/register"
 
 export default function AuthPage() {
   // Main flow steps: 1 = phone, 2 = verification code
@@ -34,11 +37,8 @@ export default function AuthPage() {
   const [verificationCode, setVerificationCode] = useState(["", "", "", "", ""])
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
-  const [nationalCode, setNationalCode] = useState("")
-  const [email, setEmail] = useState("")
-  const [address, setAddress] = useState("")
-  const [buildingNumber, setBuildingNumber] = useState("")
-  const [postalCode, setPostalCode] = useState("")
+  const [password, setPassword] = useState("")
+  const [invitationCode, setInvitationCode] = useState("")
 
   // Add state and city to the form data
   const [state, setState] = useState(null)
@@ -49,11 +49,8 @@ export default function AuthPage() {
   const [codeError, setCodeError] = useState(null)
   const [firstNameError, setFirstNameError] = useState(null)
   const [lastNameError, setLastNameError] = useState(null)
-  const [nationalCodeError, setNationalCodeError] = useState(null)
-  const [emailError, setEmailError] = useState(null)
-  const [addressError, setAddressError] = useState(null)
-  const [buildingNumberError, setBuildingNumberError] = useState(null)
-  const [postalCodeError, setPostalCodeError] = useState(null)
+  const [passwordError, setPasswordError] = useState(null)
+  const [invitationCodeError, setInvitationCodeError] = useState(null)
 
   // Add state and city errors
   const [stateError, setStateError] = useState(null)
@@ -84,11 +81,14 @@ export default function AuthPage() {
     setError(null)
 
     try {
-      // Simulate API call to send verification code
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Move to verification step
-      setStep(2)
+      const response = await sendCode(phone)
+      
+      if (response.status === 200) {
+        // Move to verification step
+        setStep(2)
+      } else {
+        setError(response.message || "خطا در ارسال کد تایید. لطفا دوباره تلاش کنید.")
+      }
     } catch (err) {
       setError("خطا در ارسال کد تایید. لطفا دوباره تلاش کنید.")
     } finally {
@@ -111,19 +111,13 @@ export default function AuthPage() {
     setError(null)
 
     try {
-      // Simulate API call to verify code
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Simulate user check - if user exists, go to home, else go to registration
-      const userExists = false // This would be determined by your API
-
-      if (userExists) {
-        // Redirect to home page
-        window.location.href = "/home"
-      } else {
-        // Start registration process
+      const response = await verifyCode(phone, fullCode)
+      if (response.data.status === "new") {
         setIsRegistering(true)
-        setRegistrationStep(1)
+      } else if (response.status === 200 || response.status === "ok") {
+
+      } else {
+        setError(response.message || "کد تایید نامعتبر است. لطفا دوباره تلاش کنید.")
       }
     } catch (err) {
       setError("کد تایید نامعتبر است. لطفا دوباره تلاش کنید.")
@@ -132,76 +126,41 @@ export default function AuthPage() {
     }
   }
 
-  const handleRegistrationStep1Submit = (e) => {
+  const handleRegistrationSubmit = async (e) => {
     e.preventDefault()
 
-    // Validate first name, last name, national code, and email
+    // Validate all fields
     const fnError = validateName(firstName)
     const lnError = validateName(lastName)
-    const ncError = validateNationalCode(nationalCode)
-    const emError = validateEmail(email)
+    const pwError = !password ? "رمز عبور الزامی است" : null
+    const icError = !invitationCode ? "کد دعوت الزامی است" : null
 
     setFirstNameError(fnError)
     setLastNameError(lnError)
-    setNationalCodeError(ncError)
-    setEmailError(emError)
+    setPasswordError(pwError)
+    setInvitationCodeError(icError)
 
-    if (fnError || lnError || ncError || emError) return
-
-    // Move to registration step 2
-    setRegistrationStep(2)
-  }
-
-  const handleRegistrationStep2Submit = async (e) => {
-    e.preventDefault()
-
-    // Validate address, building number, postal code, state, and city
-    let hasError = false
-
-    if (!address) {
-      setAddressError("آدرس الزامی است")
-      hasError = true
-    } else {
-      setAddressError(null)
-    }
-
-    if (!buildingNumber) {
-      setBuildingNumberError("پلاک الزامی است")
-      hasError = true
-    } else {
-      setBuildingNumberError(null)
-    }
-
-    if (!state) {
-      setStateError("انتخاب استان الزامی است")
-      hasError = true
-    } else {
-      setStateError(null)
-    }
-
-    if (!city) {
-      setCityError("انتخاب شهر الزامی است")
-      hasError = true
-    } else {
-      setCityError(null)
-    }
-
-    const pcError = validatePostalCode(postalCode)
-    setPostalCodeError(pcError)
-
-    if (hasError || pcError) return
+    if (fnError || lnError || pwError || icError) return
 
     setLoading(true)
     setError(null)
 
     try {
-      // Simulate API call to register user
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const response = await register(phone, firstName, lastName, password, invitationCode)
+      
+      if (response.error || !response.data || response.status !== 200) {
+        setError(response.message || "خطا در ثبت نام. لطفا دوباره تلاش کنید.")
+        return
+      }
 
-      // Redirect to home page after successful registration
-      window.location.href = "/dashboard/user"
+      // Only redirect if we have a successful response
+      if (response.data.success) {
+        window.location.href = "/dashboard/user"
+      } else {
+        setError(response.data.message || "خطا در ثبت نام. لطفا دوباره تلاش کنید.")
+      }
     } catch (err) {
-      setError("خطا در ثبت اطلاعات. لطفا دوباره تلاش کنید.")
+      setError("خطا در ثبت نام. لطفا دوباره تلاش کنید.")
     } finally {
       setLoading(false)
     }
@@ -349,7 +308,13 @@ export default function AuthPage() {
           type="button"
           variant="outline"
           className="w-full border-gray-200 hover:bg-gray-50 transition-all"
-          onClick={() => setStep(1)}
+          onClick={() => {
+            setStep(1)
+            setPhone("")
+            setVerificationCode(["", "", "", "", ""])
+            setCodeError(null)
+            setError(null)
+          }}
           disabled={loading}
         >
           تغییر شماره موبایل
@@ -358,8 +323,8 @@ export default function AuthPage() {
     </form>
   )
 
-  const renderRegistrationStep1 = () => (
-    <form onSubmit={handleRegistrationStep1Submit}>
+  const renderRegistration = () => (
+    <form onSubmit={handleRegistrationSubmit}>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="firstName" className="text-sm font-medium">
@@ -392,159 +357,49 @@ export default function AuthPage() {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="nationalCode" className="text-sm font-medium">
-            کد ملی
+          <label htmlFor="password" className="text-sm font-medium">
+            رمز عبور
           </label>
           <Input
-            id="nationalCode"
-            type="text"
-            placeholder="کد ملی ۱۰ رقمی"
-            value={nationalCode}
-            onChange={handleNationalCodeChange}
-            className={nationalCodeError ? "border-destructive" : ""}
-            maxLength={10}
-            dir="ltr"
+            id="password"
+            type="password"
+            placeholder="رمز عبور"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={passwordError ? "border-destructive" : ""}
           />
-          {nationalCodeError && <p className="text-sm text-destructive">{nationalCodeError}</p>}
+          {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium">
-            ایمیل
+          <label htmlFor="invitationCode" className="text-sm font-medium">
+            کد دعوت
           </label>
           <Input
-            id="email"
-            type="email"
-            placeholder="example@domain.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={emailError ? "border-destructive" : ""}
-            dir="ltr"
+            id="invitationCode"
+            type="text"
+            placeholder="کد دعوت"
+            value={invitationCode}
+            onChange={(e) => setInvitationCode(e.target.value)}
+            className={invitationCodeError ? "border-destructive" : ""}
           />
-          {emailError && <p className="text-sm text-destructive">{emailError}</p>}
+          {invitationCodeError && <p className="text-sm text-destructive">{invitationCodeError}</p>}
         </div>
       </CardContent>
       <CardFooter>
-        <Button type="submit" className="w-full">
-          <ArrowLeft className="h-4 w-4 ml-2" />
-          مرحله بعد
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? (
+            "در حال ثبت..."
+          ) : (
+            <>
+              <User className="h-4 w-4 ml-2" />
+              ثبت نام
+            </>
+          )}
         </Button>
       </CardFooter>
     </form>
   )
-
-  const renderRegistrationStep2 = () => {
-    // Get cities for the selected state
-    const selectedState = iranStatesAndCities.find((s) => s.id === state)
-    const cities = selectedState ? selectedState.cities : []
-
-    return (
-      <form onSubmit={handleRegistrationStep2Submit}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="address" className="text-sm font-medium">
-              آدرس
-            </label>
-            <Input
-              id="address"
-              type="text"
-              placeholder="آدرس کامل"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className={addressError ? "border-destructive" : ""}
-            />
-            {addressError && <p className="text-sm text-destructive">{addressError}</p>}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="state" className="text-sm font-medium">
-                استان
-              </label>
-              <SearchableSelect
-                options={iranStatesAndCities}
-                value={state}
-                onChange={setState}
-                placeholder="انتخاب استان"
-                error={!!stateError}
-              />
-              {stateError && <p className="text-sm text-destructive">{stateError}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="city" className="text-sm font-medium">
-                شهر
-              </label>
-              <SearchableSelect
-                options={cities}
-                value={city}
-                onChange={setCity}
-                placeholder="انتخاب شهر"
-                disabled={!state}
-                error={!!cityError}
-              />
-              {cityError && <p className="text-sm text-destructive">{cityError}</p>}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="buildingNumber" className="text-sm font-medium">
-                پلاک
-              </label>
-              <Input
-                id="buildingNumber"
-                type="text"
-                placeholder="پلاک"
-                value={buildingNumber}
-                onChange={(e) => setBuildingNumber(e.target.value)}
-                className={buildingNumberError ? "border-destructive" : ""}
-              />
-              {buildingNumberError && <p className="text-sm text-destructive">{buildingNumberError}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="postalCode" className="text-sm font-medium">
-                کد پستی
-              </label>
-              <Input
-                id="postalCode"
-                type="text"
-                placeholder="کد پستی ۱۰ رقمی"
-                value={postalCode}
-                onChange={handlePostalCodeChange}
-                className={postalCodeError ? "border-destructive" : ""}
-                maxLength={10}
-                dir="ltr"
-              />
-              {postalCodeError && <p className="text-sm text-destructive">{postalCodeError}</p>}
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-2">
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              "در حال ثبت..."
-            ) : (
-              <>
-                <User className="h-4 w-4 ml-2" />
-                ثبت نام
-              </>
-            )}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => setRegistrationStep(1)}
-            disabled={loading}
-          >
-            بازگشت به مرحله قبل
-          </Button>
-        </CardFooter>
-      </form>
-    )
-  }
 
   // Determine what content to show
   const renderContent = () => {
@@ -554,8 +409,7 @@ export default function AuthPage() {
       if (step === 2) return renderVerificationStep()
     } else {
       // Registration flow
-      if (registrationStep === 1) return renderRegistrationStep1()
-      if (registrationStep === 2) return renderRegistrationStep2()
+      return renderRegistration()
     }
   }
 
@@ -579,8 +433,7 @@ export default function AuthPage() {
       // Registration flow
       return {
         title: "ثبت نام",
-        description:
-          registrationStep === 1 ? "لطفا اطلاعات شخصی خود را وارد کنید" : "لطفا اطلاعات آدرس خود را وارد کنید",
+        description: "لطفا اطلاعات خود را وارد کنید",
       }
     }
   }

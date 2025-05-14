@@ -5,6 +5,7 @@ import { Save, X, Upload, Plus, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
+import { createProduct } from "@/lib/api/admin/product/addProduct"
 
 export default function AddProductPage() {
   const [loading, setLoading] = useState(false)
@@ -13,11 +14,22 @@ export default function AddProductPage() {
     title: "",
     description: "",
     price: "",
-    discountPrice: "",
-    category: "",
-    stock: "",
+    discount_price: "",
+    category_id: "",
+    inventory: "",
+    status: "published",
     features: [""],
+    image: null
   })
+
+  const categories = [
+    { id: 1, name: "موبایل" },
+    { id: 2, name: "لپ تاپ" },
+    { id: 3, name: "هدفون" },
+    { id: 4, name: "تبلت" },
+    { id: 5, name: "صوتی" },
+    { id: 6, name: "پوشیدنی" }
+  ]
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -52,16 +64,33 @@ export default function AddProductPage() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setProductData(prev => ({
+        ...prev,
+        image: file
+      }))
+    }
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      const response = await createProduct(productData)
+      if (response.error) {
+        throw new Error(response.message)
+      }
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
-    }, 1500)
+    } catch (error) {
+      console.error('Error creating product:', error)
+      // اینجا می‌تونید یک state برای نمایش خطا اضافه کنید
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -134,18 +163,18 @@ export default function AddProductPage() {
                   </label>
                   <select
                     id="category"
-                    name="category"
-                    value={productData.category}
+                    name="category_id"
+                    value={productData.category_id}
                     onChange={handleChange}
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     required
                   >
                     <option value="">انتخاب دسته‌بندی</option>
-                    <option value="موبایل">موبایل</option>
-                    <option value="لپ تاپ">لپ تاپ</option>
-                    <option value="تبلت">تبلت</option>
-                    <option value="صوتی">صوتی</option>
-                    <option value="پوشیدنی">پوشیدنی</option>
+                    {categories.map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -176,8 +205,8 @@ export default function AddProductPage() {
                   </label>
                   <Input
                     id="discountPrice"
-                    name="discountPrice"
-                    value={productData.discountPrice}
+                    name="discount_price"
+                    value={productData.discount_price}
                     onChange={handleChange}
                     placeholder="در صورت وجود تخفیف"
                   />
@@ -189,9 +218,9 @@ export default function AddProductPage() {
                   </label>
                   <Input
                     id="stock"
-                    name="stock"
+                    name="inventory"
                     type="number"
-                    value={productData.stock}
+                    value={productData.inventory}
                     onChange={handleChange}
                     placeholder="تعداد موجودی"
                     required
@@ -250,7 +279,13 @@ export default function AddProductPage() {
                 <div className="flex flex-col items-center justify-center">
                   <Upload className="h-10 w-10 text-gray-400 mb-2" />
                   <p className="text-sm text-gray-500 mb-4">فایل تصویر را اینجا رها کنید یا کلیک کنید</p>
-                  <input type="file" className="hidden" id="product-image" />
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    id="product-image" 
+                    onChange={handleImageChange}
+                    accept="image/*"
+                  />
                   <label
                     htmlFor="product-image"
                     className="bg-primary text-white px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-primary/90 transition-colors"
