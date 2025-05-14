@@ -119,7 +119,12 @@ export default function AuthPage() {
           const token = response.data.token
           if (token) {
             Cookies.set("authToken", token, { expires: 30 })
-            window.location.href = "/dashboard/user"
+            if(response.data.user.is_admin) {
+              window.location.href = "/dashboard/admin"
+            }else{
+              window.location.href = "/dashboard/user"
+
+            }
           } else {
             setError("توکن دریافت نشد. لطفا دوباره تلاش کنید.")
           }
