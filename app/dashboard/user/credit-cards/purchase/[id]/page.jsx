@@ -5,6 +5,7 @@ import { CreditCard, Check, ArrowRight, User, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import React from "react"
+import { purchaseCards } from "@/lib/api/user/cards/purchaseCards"
 
 // Sample credit cards data
 const creditCards = [
@@ -64,16 +65,26 @@ export default function PurchaseCreditCardPage({ params }) {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setIsSuccess(true)
-      setStep(3)
-    }, 2000)
+    try {
+      const response = await purchaseCards(card.id);
+
+      if (response && !response.error) {
+        setIsSuccess(true);
+        setStep(3);
+      } else {
+        console.error("Purchase failed:", response.message || "Unknown error");
+        setIsSuccess(false);
+      }
+    } catch (error) {
+      console.error("An unexpected error occurred:", error);
+      setIsSuccess(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (

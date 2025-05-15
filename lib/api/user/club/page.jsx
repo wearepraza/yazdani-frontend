@@ -6,10 +6,6 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { convertClub } from "@/lib/api/user/club/convertClub"
 import { overviewClub } from "@/lib/api/user/club/overviewClub"
-import { statusRewards } from "@/lib/api/user/club/rewards/statusRewards"
-import { listRewards } from "@/lib/api/user/club/rewards/listRewards"
-import { claimedRewards } from "@/lib/api/user/club/rewards/claimedRewards"
-import { redeemRewards } from "@/lib/api/user/club/rewards/redeemRewards"
 
 export default function ClubPage() {
   const [isUnlocked, setIsUnlocked] = useState(false)
@@ -26,19 +22,6 @@ export default function ClubPage() {
 
         const overviewResponse = await overviewClub();
         console.log("Overview Club Response:", overviewResponse);
-
-        const statusRewardsResponse = await statusRewards();
-        console.log("Status Rewards Response:", statusRewardsResponse);
-
-        const listRewardsResponse = await listRewards();
-        console.log("List Rewards Response:", listRewardsResponse);
-
-        const claimedRewardsResponse = await claimedRewards();
-        console.log("Claimed Rewards Response:", claimedRewardsResponse);
-
-        const redeemRewardsResponse = await redeemRewards();
-        console.log("Redeem Rewards Response:", redeemRewardsResponse);
-
       } catch (error) {
         console.error("Error fetching club data:", error);
       }

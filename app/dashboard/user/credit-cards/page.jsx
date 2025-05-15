@@ -1,4 +1,3 @@
-
 "use client"
 import { CreditCard, Check, Info, ShieldCheck, Clock, Zap, AlertCircle, Gift, Percent } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -136,12 +135,35 @@ const creditCards = [
 
 export default function CreditCardsPage() {
   const [userCards, setUserCards] = useState([])
+  const [availableCards, setAvailableCards] = useState([])
 
+  // Mapping for colors and icons based on card ID - adjust as needed
+  const cardStyles = {
+    1: { color: "from-blue-400 to-blue-600", icon: "bg-blue-100 text-blue-600" },
+    2: { color: "from-green-400 to-green-600", icon: "bg-green-100 text-green-600" },
+    3: { color: "from-purple-400 to-purple-600", icon: "bg-purple-100 text-purple-600" },
+    4: { color: "from-pink-400 to-pink-600", icon: "bg-pink-100 text-pink-600" },
+    5: { color: "from-amber-500 to-yellow-500", icon: "bg-amber-100 text-amber-600" },
+    6: { color: "from-red-400 to-red-600", icon: "bg-red-100 text-red-600" },
+    7: { color: "from-cyan-400 to-cyan-600", icon: "bg-cyan-100 text-cyan-600" },
+    8: { color: "from-indigo-400 to-indigo-600", icon: "bg-indigo-100 text-indigo-600" },
+    9: { color: "from-gray-400 to-gray-600", icon: "bg-gray-100 text-gray-600" },
+    10: { color: "from-gray-700 to-gray-900", icon: "bg-gray-100 text-gray-800" },
+  }
 
   const convertToJalali = (dateString) => {
     return moment(dateString, "YYYY-MM-DD").format("jYYYY/jMM/jDD")
   }
   
+  // Helper function to convert Latin digits to Persian digits
+  const toPersianDigits = (num) => {
+    if (num === null || num === undefined) return '';
+    const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    const numStr = String(num);
+    return numStr.replace(/\d/g, (digit) => persianDigits[englishDigits.indexOf(digit)]);
+  };
+
   const calcDaysLeft = (dateString) => {
     const today = moment()
     const expiry = moment(dateString, "YYYY-MM-DD")
@@ -156,10 +178,10 @@ export default function CreditCardsPage() {
   
         const formatted = cards.map((card, index) => ({
           id: index + 1,
-          title: `کارت اعتباری ${card.amount.toLocaleString()} تومانی`,
+          title: `کارت اعتباری ${toPersianDigits(card.amount.toLocaleString())} تومانی`,
           cardNumber: "۶۲۱۹-****-****-۱۲۳۴",
-          credit: `${card.credit.toLocaleString()}`,
-          remaining: `${card.card_amount.toLocaleString()}`,
+          credit: `${toPersianDigits(card.credit.toLocaleString())}`,
+          remaining: `${toPersianDigits(card.card_amount.toLocaleString())}`,
           expiry: convertToJalali(card.expires_at), 
           status: "فعال",
           daysLeft: calcDaysLeft(card.expires_at),
@@ -175,23 +197,29 @@ export default function CreditCardsPage() {
     const fetchAllCards = async () => {
       try {
         const response = await allCards()
-        // const cards = response?.data?.my_cards || []
-  
-        // const formatted = cards.map((card, index) => ({
-        //   id: index + 1,
-        //   title: `کارت اعتباری ${card.amount.toLocaleString()} تومانی`,
-        //   cardNumber: "۶۲۱۹-****-****-۱۲۳۴",
-        //   credit: `${card.credit.toLocaleString()}`,
-        //   remaining: `${card.card_amount.toLocaleString()}`,
-        //   expiry: convertToJalali(card.expires_at), 
-        //   status: "فعال",
-        //   daysLeft: calcDaysLeft(card.expires_at),
-        //   color: "from-amber-500 to-yellow-500", 
-        // }))
-  
-        // setUserCards(formatted)
+        const cards = response?.data?.cards || []
+
+        const formatted = cards.map((card) => ({
+          id: card.id,
+          title: `کارت اعتباری ${toPersianDigits(card.amount.toLocaleString())} تومانی`,
+          price: `${toPersianDigits(card.amount.toLocaleString())}`,
+          credit: `${toPersianDigits((card.amount * card.credit_multiplier).toLocaleString())}`,
+          rewardCeiling: `${toPersianDigits((card.amount * card.reward_limit_multiplier).toLocaleString())}`,
+          rewardMultiplier: `${toPersianDigits(card.reward_limit_multiplier)}`,
+          duration: "۱۰۰ روز", // Duration is not in API, keeping hardcoded
+          features: [
+            `شارژ ${toPersianDigits(card.credit_multiplier)} برابری اعتبار`,
+            `سقف پاداش ${toPersianDigits(card.reward_limit_multiplier)} برابر`,
+            "مشارکت در خرید"
+          ],
+          color: cardStyles[card.id]?.color || "from-gray-200 to-gray-300", // Default color if ID not found
+          icon: cardStyles[card.id]?.icon || "bg-gray-100 text-gray-800", // Default icon if ID not found
+          popular: card.id === 5, // Hardcoding popular for ID 5 as before
+        }))
+
+        setAvailableCards(formatted)
       } catch (error) {
-        console.error("Error fetching credit cards:", error)
+        console.error("Error fetching available credit cards:", error)
       }
     }
     
@@ -269,7 +297,7 @@ export default function CreditCardsPage() {
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-white/80 text-xs mb-1">اعتبار باقیمانده</p>
-                        <p className="font-bold">{card.remaining} تومان</p>
+                        <p className="font-bold">{toPersianDigits(card.remaining)} تومان</p>
                       </div>
                       <div>
                         <p className="text-white/80 text-xs mb-1">تاریخ انقضا</p>
@@ -281,7 +309,7 @@ export default function CreditCardsPage() {
                   <div className="flex justify-between items-center">
                     <div className="flex flex-col">
                       <span className="text-xs text-white/80">روزهای باقیمانده</span>
-                      <span className="font-bold">{card.daysLeft} روز</span>
+                      <span className="font-bold">{toPersianDigits(card.daysLeft)} روز</span>
                     </div>
                     <Link href={`/dashboard/user/credit-cards/${card.id}`}>
                       <Button
@@ -311,7 +339,7 @@ export default function CreditCardsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          {creditCards.map((card) => (
+          {availableCards.map((card) => (
             <div
               key={card.id}
               className={`bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden relative ${
@@ -333,7 +361,7 @@ export default function CreditCardsPage() {
 
                 <div className="mb-3">
                   <div className="flex items-baseline gap-1 mb-1">
-                    <span className="text-xl font-bold">{card.price}</span>
+                    <span className="text-xl font-bold">{toPersianDigits(card.price)}</span>
                     <span className="text-gray-500 text-xs">تومان</span>
                   </div>
                 </div>
@@ -341,18 +369,18 @@ export default function CreditCardsPage() {
                 <div className="space-y-2 mb-4 text-xs">
                   <div className="flex items-center gap-1.5">
                     <Zap className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-gray-700">اعتبار: {card.credit} تومان</span>
+                    <span className="text-gray-700">اعتبار: {toPersianDigits(card.credit)} تومان</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Gift className="h-3.5 w-3.5 text-primary" />
                     <span className="text-gray-700">سقف پاداش:
-                    {`${card.rewardCeiling} تومان`}
+                    {`${toPersianDigits(card.rewardCeiling)} تومان`}
 
                        </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Percent className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-gray-700">ضریب پاداش: {card.rewardMultiplier} برابر</span>
+                    <span className="text-gray-700">ضریب پاداش: {toPersianDigits(card.rewardMultiplier)} برابر</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Clock className="h-3.5 w-3.5 text-primary" />
@@ -386,12 +414,12 @@ export default function CreditCardsPage() {
                 </tr>
               </thead>
               <tbody>
-                {creditCards.map((card) => (
+                {availableCards.map((card) => (
                   <tr key={card.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">{card.title}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{card.price} تومان</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{card.rewardMultiplier} برابر</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{card.rewardCeiling} تومان</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{toPersianDigits(card.price)} تومان</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{toPersianDigits(card.rewardMultiplier)} برابر</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{toPersianDigits(card.rewardCeiling)} تومان</td>
                   </tr>
                 ))}
               </tbody>
