@@ -1,62 +1,30 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Filter, Eye, Calendar, User, Package, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-
-// Sample orders data
-const sampleOrders = [
-  {
-    id: "ORD-12345",
-    customer: "علی محمدی",
-    date: "۱۴۰۲/۰۸/۱۵",
-    total: "۱۲,۵۰۰,۰۰۰",
-    items: 2,
-    status: "تکمیل شده",
-    paymentStatus: "پرداخت شده",
-  },
-  {
-    id: "ORD-12346",
-    customer: "مریم احمدی",
-    date: "۱۴۰۲/۰۸/۱۵",
-    total: "۳۵,۸۰۰,۰۰۰",
-    items: 1,
-    status: "در حال پردازش",
-    paymentStatus: "پرداخت شده",
-  },
-  {
-    id: "ORD-12347",
-    customer: "رضا کریمی",
-    date: "۱۴۰۲/۰۸/۱۴",
-    total: "۲,۸۰۰,۰۰۰",
-    items: 1,
-    status: "ارسال شده",
-    paymentStatus: "پرداخت شده",
-  },
-  {
-    id: "ORD-12348",
-    customer: "سارا حسینی",
-    date: "۱۴۰۲/۰۸/۱۴",
-    total: "۴,۵۰۰,۰۰۰",
-    items: 1,
-    status: "لغو شده",
-    paymentStatus: "بازگشت وجه",
-  },
-  {
-    id: "ORD-12349",
-    customer: "محمد رضایی",
-    date: "۱۴۰۲/۰۸/۱۳",
-    total: "۸,۹۰۰,۰۰۰",
-    items: 3,
-    status: "تحویل داده شده",
-    paymentStatus: "پرداخت شده",
-  },
-]
+import Cookies from "js-cookie"
+import { listOrders } from "@/lib/api/admin/orders/listOrders"
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState(sampleOrders)
+  const [orders, setOrders] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchOrders() {
+      setLoading(true)
+      const response = await listOrders()
+      if (response && response.data && response.data.orders) {
+        setOrders(response.data.orders)
+      } else {
+        setOrders([])
+      }
+      setLoading(false)
+    }
+    fetchOrders()
+  }, [])
 
   const filteredOrders = orders.filter((order) => order.id.includes(searchTerm) || order.customer.includes(searchTerm))
 
@@ -134,7 +102,13 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                    در حال بارگذاری...
+                  </td>
+                </tr>
+              ) : filteredOrders.length > 0 ? (
                 filteredOrders.map((order) => (
                   <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-4 text-sm font-medium text-gray-900">{order.id}</td>

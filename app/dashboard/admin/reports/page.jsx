@@ -1,6 +1,72 @@
+"use client"
+
 import { BarChart3, Users, ShoppingBag, CreditCard, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { summuryReports } from "@/lib/api/admin/reports/summuryReports"
+import { topProductsReports } from "@/lib/api/admin/reports/topProductsReports"
+import { getTimelineReports } from "@/lib/api/admin/reports/timelineReports"
+import { useEffect, useState } from "react"
 
 export default function ReportsPage() {
+  const [summaryData, setSummaryData] = useState({
+    total_sales: 0,
+    sales_growth: 0,
+    total_users: 0,
+    users_growth: 0,
+    total_orders: 0,
+    orders_growth: 0,
+    average_order: 0,
+    average_order_growth: 0,
+    recent_orders: []
+  });
+  const [topProducts, setTopProducts] = useState([]);
+  const [timelineData, setTimelineData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch summary data
+        const summaryResponse = await summuryReports();
+        console.log('Summary Reports Response:', summaryResponse);
+        if (summaryResponse?.data) {
+          setSummaryData(summaryResponse.data);
+        }
+
+        // Fetch top products
+        const topProductsResponse = await topProductsReports();
+        console.log('Top Products Response:', topProductsResponse);
+        if (topProductsResponse?.data) {
+          setTopProducts(topProductsResponse.data);
+        }
+
+        // Fetch timeline data
+        const timelineResponse = await getTimelineReports('monthly');
+        console.log('Timeline Response:', timelineResponse);
+        if (timelineResponse?.data) {
+          setTimelineData(timelineResponse.data);
+        }
+      } catch (error) {
+        console.error('Error fetching reports:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">در حال بارگذاری...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <div className="mb-8">
@@ -14,10 +80,10 @@ export default function ReportsPage() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">کل فروش</p>
-              <h3 className="text-2xl font-bold">۱,۲۵۶,۰۰۰,۰۰۰</h3>
+              <h3 className="text-2xl font-bold">{summaryData?.total_sales || '۰'}</h3>
               <div className="flex items-center mt-2 text-green-500 text-sm">
                 <ArrowUpRight size={16} className="mr-1" />
-                <span>۱۲.۵٪ نسبت به ماه قبل</span>
+                <span>{summaryData?.sales_growth || '۰'}٪ نسبت به ماه قبل</span>
               </div>
             </div>
             <div className="bg-primary/10 p-3 rounded-lg">
@@ -30,10 +96,10 @@ export default function ReportsPage() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">تعداد کاربران</p>
-              <h3 className="text-2xl font-bold">۲,۵۶۷</h3>
+              <h3 className="text-2xl font-bold">{summaryData?.total_users || '۰'}</h3>
               <div className="flex items-center mt-2 text-green-500 text-sm">
                 <ArrowUpRight size={16} className="mr-1" />
-                <span>۸.۳٪ نسبت به ماه قبل</span>
+                <span>{summaryData?.users_growth || '۰'}٪ نسبت به ماه قبل</span>
               </div>
             </div>
             <div className="bg-amber-500/10 p-3 rounded-lg">
@@ -46,10 +112,10 @@ export default function ReportsPage() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">تعداد سفارشات</p>
-              <h3 className="text-2xl font-bold">۹۸۷</h3>
+              <h3 className="text-2xl font-bold">{summaryData?.total_orders || '۰'}</h3>
               <div className="flex items-center mt-2 text-red-500 text-sm">
                 <ArrowDownRight size={16} className="mr-1" />
-                <span>۳.۲٪ نسبت به ماه قبل</span>
+                <span>{summaryData?.orders_growth || '۰'}٪ نسبت به ماه قبل</span>
               </div>
             </div>
             <div className="bg-green-500/10 p-3 rounded-lg">
@@ -62,10 +128,10 @@ export default function ReportsPage() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">میانگین سفارش</p>
-              <h3 className="text-2xl font-bold">۱,۲۷۵,۰۰۰</h3>
+              <h3 className="text-2xl font-bold">{summaryData?.average_order || '۰'}</h3>
               <div className="flex items-center mt-2 text-green-500 text-sm">
                 <ArrowUpRight size={16} className="mr-1" />
-                <span>۵.۷٪ نسبت به ماه قبل</span>
+                <span>{summaryData?.average_order_growth || '۰'}٪ نسبت به ماه قبل</span>
               </div>
             </div>
             <div className="bg-purple-500/10 p-3 rounded-lg">
@@ -87,24 +153,42 @@ export default function ReportsPage() {
 
           <div className="border-t border-gray-100 pt-6">
             <div className="space-y-4">
-              {[
-                { month: "فروردین", amount: "۸۵,۰۰۰,۰۰۰", percentage: 40 },
-                { month: "اردیبهشت", amount: "۱۱۰,۰۰۰,۰۰۰", percentage: 55 },
-                { month: "خرداد", amount: "۹۵,۰۰۰,۰۰۰", percentage: 48 },
-                { month: "تیر", amount: "۱۲۵,۰۰۰,۰۰۰", percentage: 62 },
-                { month: "مرداد", amount: "۱۴۰,۰۰۰,۰۰۰", percentage: 70 },
-                { month: "شهریور", amount: "۱۶۰,۰۰۰,۰۰۰", percentage: 80 },
-              ].map((item, index) => (
-                <div key={index}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">{item.month}</span>
-                    <span className="text-sm text-gray-500">{item.amount} تومان</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2.5">
-                    <div className="bg-primary h-2.5 rounded-full" style={{ width: `${item.percentage}%` }}></div>
-                  </div>
-                </div>
-              ))}
+              {timelineData && timelineData.length > 0 ? (
+                timelineData.map((item, index) => {
+                  // Skip items with null period
+                  if (!item.period) return null;
+                  
+                  // Format the period to show month name
+                  const [year, month] = item.period.split('-');
+                  const date = new Date(year, month - 1);
+                  const monthName = date.toLocaleDateString('fa-IR', { month: 'long' });
+                  
+                  // Calculate percentage based on revenue
+                  const revenue = parseInt(item.revenue) || 0;
+                  const percentage = Math.min((revenue / 1000000) * 100, 100); // Assuming 1M is max for 100%
+                  
+                  return (
+                    <div key={index}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium">{monthName}</span>
+                        <span className="text-sm text-gray-500">{revenue.toLocaleString('fa-IR')} تومان</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2.5">
+                        <div 
+                          className="bg-primary h-2.5 rounded-full" 
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                      {/* <div className="flex justify-between mt-1 text-xs text-gray-500">
+                        <span>{item.orders} سفارش</span>
+                        <span>{item.new_users} کاربر جدید</span>
+                      </div> */}
+                    </div>
+                  );
+                }).filter(Boolean) // Remove null items
+              ) : (
+                <p className="text-center text-gray-500">اطلاعاتی موجود نیست</p>
+              )}
             </div>
           </div>
         </div>
@@ -120,41 +204,19 @@ export default function ReportsPage() {
 
           <div className="border-t border-gray-100 pt-6">
             <div className="space-y-6">
-              {[
-                {
-                  name: "گوشی موبایل سامسونگ گلکسی S23",
-                  count: 87,
-                  amount: "۳۹۱,۵۰۰,۰۰۰",
-                },
-                {
-                  name: "لپ تاپ اپل مک‌بوک پرو",
-                  count: 64,
-                  amount: "۵۴۴,۰۰۰,۰۰۰",
-                },
-                {
-                  name: "هدفون بی‌سیم سونی",
-                  count: 52,
-                  amount: "۶۲,۴۰۰,۰۰۰",
-                },
-                {
-                  name: "ساعت هوشمند اپل واچ",
-                  count: 45,
-                  amount: "۱۰۱,۲۵۰,۰۰۰",
-                },
-                {
-                  name: "تبلت سامسونگ گلکسی تب",
-                  count: 38,
-                  amount: "۷۰,۳۰۰,۰۰۰",
-                },
-              ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-sm">{item.name}</h3>
-                    <p className="text-xs text-gray-500 mt-1">{item.count} فروش</p>
+              {topProducts && topProducts.length > 0 ? (
+                topProducts.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-sm">{item.name}</h3>
+                      <p className="text-xs text-gray-500 mt-1">{item.count} فروش</p>
+                    </div>
+                    <div className="text-sm font-medium">{item.amount}</div>
                   </div>
-                  <div className="text-sm font-medium">{item.amount}</div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-center text-gray-500">اطلاعاتی موجود نیست</p>
+              )}
             </div>
           </div>
         </div>
@@ -185,67 +247,29 @@ export default function ReportsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {[
-                {
-                  id: "#ORD-71267",
-                  customer: "علی محمدی",
-                  product: "گوشی موبایل سامسونگ گلکسی S23",
-                  date: "۱۴۰۲/۰۶/۱۵",
-                  amount: "۴۵,۹۰۰,۰۰۰",
-                  status: "تکمیل شده",
-                  statusColor: "bg-green-500",
-                },
-                {
-                  id: "#ORD-71268",
-                  customer: "مریم احمدی",
-                  product: "لپ تاپ اپل مک‌بوک پرو",
-                  date: "۱۴۰۲/۰۶/۱۴",
-                  amount: "۸۵,۵۰۰,۰۰۰",
-                  status: "در حال پردازش",
-                  statusColor: "bg-amber-500",
-                },
-                {
-                  id: "#ORD-71269",
-                  customer: "رضا کریمی",
-                  product: "هدفون بی‌سیم سونی",
-                  date: "۱۴۰۲/۰۶/۱۴",
-                  amount: "۱۲,۸۰۰,۰۰۰",
-                  status: "تکمیل شده",
-                  statusColor: "bg-green-500",
-                },
-                {
-                  id: "#ORD-71270",
-                  customer: "سارا حسینی",
-                  product: "ساعت هوشمند اپل واچ",
-                  date: "۱۴۰۲/۰۶/۱۳",
-                  amount: "۲۲,۵۰۰,۰۰۰",
-                  status: "در حال ارسال",
-                  statusColor: "bg-blue-500",
-                },
-                {
-                  id: "#ORD-71271",
-                  customer: "محمد رضایی",
-                  product: "تبلت سامسونگ گلکسی تب",
-                  date: "۱۴۰۲/۰۶/۱۲",
-                  amount: "۱۸,۵۰۰,۰۰۰",
-                  status: "لغو شده",
-                  statusColor: "bg-red-500",
-                },
-              ].map((order, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="py-4 px-6 font-medium">{order.id}</td>
-                  <td className="py-4 px-6">{order.customer}</td>
-                  <td className="py-4 px-6">{order.product}</td>
-                  <td className="py-4 px-6">{order.date}</td>
-                  <td className="py-4 px-6">{order.amount} تومان</td>
-                  <td className="py-4 px-6">
-                    <span className="flex items-center">
-                      <span className={`w-2 h-2 rounded-full ${order.statusColor} mr-2`}></span>
-                      {order.status}
-                    </span>
+              {summaryData?.recent_orders && summaryData.recent_orders.length > 0 ? (
+                summaryData.recent_orders.map((order, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="py-4 px-6 font-medium">{order.id}</td>
+                    <td className="py-4 px-6">{order.customer}</td>
+                    <td className="py-4 px-6">{order.product}</td>
+                    <td className="py-4 px-6">{order.date}</td>
+                    <td className="py-4 px-6">{order.amount} تومان</td>
+                    <td className="py-4 px-6">
+                      <span className="flex items-center">
+                        <span className={`w-2 h-2 rounded-full ${order.statusColor} mr-2`}></span>
+                        {order.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="py-4 px-6 text-center text-gray-500">
+                    اطلاعاتی موجود نیست
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
