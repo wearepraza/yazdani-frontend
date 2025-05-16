@@ -266,7 +266,7 @@ useEffect(() => {
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-800 md:text-3xl">محصولات ویژه</h2>
+            <h2 className="text-2xl font-bold text-gray-800 md:text-3xl">محصولات فونیکسو</h2>
             <Link href="/products" className="text-blue-600 hover:text-blue-700">
               مشاهده همه
             </Link>
@@ -274,46 +274,6 @@ useEffect(() => {
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {featuredProducts.slice(0, 8).map((product) => (
-              <EnhancedProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Banner Section */}
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg">
-            <div className="flex flex-col items-center justify-between gap-6 p-8 md:flex-row">
-              <div className="text-center md:text-right md:w-1/2">
-                <h2 className="mb-4 text-2xl font-bold text-white md:text-3xl">تخفیف‌های ویژه تابستانی</h2>
-                <p className="mb-6 text-white/90">تا ۳۰٪ تخفیف روی محصولات منتخب فقط تا پایان ماه</p>
-                <Link href="/products">
-                  <button className="rounded-lg bg-white px-6 py-3 font-bold text-blue-600 transition-all hover:bg-blue-50">
-                    مشاهده تخفیف‌ها
-                  </button>
-                </Link>
-              </div>
-              <div className="md:w-1/2">
-                <img src="/placeholder.svg?key=dm3kz" alt="تخفیف تابستانی" className="rounded-lg" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* New Arrivals Section */}
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-800 md:text-3xl">محصولات جدید</h2>
-            <Link href="/products" className="text-blue-600 hover:text-blue-700">
-              مشاهده همه
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {newProducts.map((product) => (
               <EnhancedProductCard key={product.id} product={product} />
             ))}
           </div>
