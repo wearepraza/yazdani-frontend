@@ -1,11 +1,34 @@
+"use client"
+
 import Link from "next/link"
 import { Heart, ShoppingCart, Star } from "lucide-react"
 import { STORAGE } from "@/lib/api/config"
+import { toggleFavoriteUser } from "@/lib/api/user/favorites/toggleFavoriteUser"
+import { useState } from "react"
 
 export default function EnhancedProductCard({ product, showActions = true }) {
   const { id, title, price, discountedPrice, discount, image, isNew, rating, category } = product
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const hasDiscount = discount > 0
+
+  const handleFavoriteToggle = async (e) => {
+    e.preventDefault()
+    if (isLoading) return
+
+    setIsLoading(true)
+    try {
+      const response = await toggleFavoriteUser(id)
+      if (!response.error) {
+        setIsFavorite(!isFavorite)
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="group relative overflow-hidden rounded-lg bg-white shadow-md transition-all duration-300 hover:shadow-lg h-[420px]">
@@ -39,8 +62,14 @@ export default function EnhancedProductCard({ product, showActions = true }) {
                 <Star className="h-5 w-5" />
               </button>
             </Link>
-            <button className="rounded-full bg-white p-2 text-gray-800 transition-colors hover:bg-blue-500 hover:text-white">
-              <Heart className="h-5 w-5" />
+            <button 
+              onClick={handleFavoriteToggle}
+              disabled={isLoading}
+              className={`rounded-full bg-white p-2 transition-colors hover:bg-blue-500 hover:text-white ${
+                isFavorite ? "text-red-500 hover:text-white" : "text-gray-800"
+              }`}
+            >
+              <Heart className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`} />
             </button>
             <button className="rounded-full bg-white p-2 text-gray-800 transition-colors hover:bg-blue-500 hover:text-white">
               <ShoppingCart className="h-5 w-5" />
