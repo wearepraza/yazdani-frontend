@@ -1,61 +1,99 @@
+"use client"
 import Link from "next/link"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import EnhancedProductCard from "@/components/enhanced-product-card"
-
-// Sample data for products
-const products = Array(16)
-  .fill()
-  .map((_, i) => ({
-    id: i + 1,
-    title: `محصول شماره ${i + 1}`,
-    price: Math.floor(Math.random() * 10000000) + 1000000,
-    discountedPrice: 0,
-    discount: Math.random() > 0.7 ? Math.floor(Math.random() * 30) + 5 : 0,
-    image: `/placeholder.svg?height=300&width=300&query=product+${i + 1}`,
-    isNew: Math.random() > 0.8,
-    rating: (Math.random() * 2 + 3).toFixed(1),
-    category: ["موبایل", "لپ تاپ", "تبلت", "هدفون", "ساعت هوشمند"][Math.floor(Math.random() * 5)],
-  }))
-  .map((product) => ({
-    ...product,
-    discountedPrice: product.discount > 0 ? Math.floor(product.price * (1 - product.discount / 100)) : product.price,
-  }))
-
-// Categories for filter
-const categories = [
-  { id: "all", name: "همه محصولات" },
-  { id: "mobile", name: "موبایل" },
-  { id: "laptop", name: "لپ تاپ" },
-  { id: "tablet", name: "تبلت" },
-  { id: "headphone", name: "هدفون و هندزفری" },
-  { id: "smartwatch", name: "ساعت هوشمند" },
-  { id: "accessories", name: "لوازم جانبی" },
-]
-
-// Brands for filter
-const brands = [
-  { id: "apple", name: "اپل" },
-  { id: "samsung", name: "سامسونگ" },
-  { id: "xiaomi", name: "شیائومی" },
-  { id: "huawei", name: "هواوی" },
-  { id: "sony", name: "سونی" },
-  { id: "lg", name: "ال جی" },
-]
+import { listProducts } from "@/lib/api/main/listProducts"
+import { listCategory } from "@/lib/api/main/listCategory"
+import { useState, useEffect } from "react"
 
 // Price ranges for filter
 const priceRanges = [
-  { id: "under-5m", name: "کمتر از ۵ میلیون تومان" },
-  { id: "5m-10m", name: "۵ تا ۱۰ میلیون تومان" },
-  { id: "10m-20m", name: "۱۰ تا ۲۰ میلیون تومان" },
-  { id: "over-20m", name: "بیشتر از ۲۰ میلیون تومان" },
+  { id: "under-5m", name: "کمتر از ۵ میلیون تومان", min: 0, max: 5000000 },
+  { id: "5m-10m", name: "۵ تا ۱۰ میلیون تومان", min: 5000000, max: 10000000 },
+  { id: "10m-20m", name: "۱۰ تا ۲۰ میلیون تومان", min: 10000000, max: 20000000 },
+  { id: "over-20m", name: "بیشتر از ۲۰ میلیون تومان", min: 20000000, max: Infinity },
 ]
 
 export default function ProductsPage() {
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [selectedPriceRange, setSelectedPriceRange] = useState("")
+  const [showOnlyDiscounted, setShowOnlyDiscounted] = useState(false)
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(false)
+  const [sortBy, setSortBy] = useState("newest")
+  const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
+
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      const productsResponse = await listProducts()
+      const categoriesResponse = await listCategory()
+      
+      setProducts(productsResponse.data || [])
+      setCategories(categoriesResponse.data?.categories || [])
+    }
+    
+    fetchData()
+  }, [])
+
+  // Transform categories to match the required format
+  const transformedCategories = [
+    { id: "all", name: "همه محصولات" },
+    ...categories.map(cat => ({
+      id: cat.id.toString(),
+      name: cat.name
+    }))
+  ]
+
+  // Filter products based on selected filters
+  const filteredProducts = products.filter(product => {
+    // Category filter
+    if (selectedCategory !== "all" && product.category_id.toString() !== selectedCategory) {
+      return false
+    }
+
+    // Price range filter
+    if (selectedPriceRange) {
+      const range = priceRanges.find(r => r.id === selectedPriceRange)
+      if (range && (product.price < range.min || product.price > range.max)) {
+        return false
+      }
+    }
+
+    // Discount filter
+    if (showOnlyDiscounted && !product.discount_price) {
+      return false
+    }
+
+    // Availability filter
+    if (showOnlyAvailable && product.inventory <= 0) {
+      return false
+    }
+
+    return true
+  })
+
+  // Sort products
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortBy) {
+      case "newest":
+        return new Date(b.created_at) - new Date(a.created_at)
+      case "price-asc":
+        return a.price - b.price
+      case "price-desc":
+        return b.price - a.price
+      case "discount":
+        const discountA = a.discount_price ? ((a.price - a.discount_price) / a.price) * 100 : 0
+        const discountB = b.discount_price ? ((b.price - b.discount_price) / b.price) * 100 : 0
+        return discountB - discountA
+      default:
+        return 0
+    }
+  })
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
-
       {/* Breadcrumb */}
       <div className="bg-white py-4 shadow-sm">
         <div className="container mx-auto px-4">
@@ -77,7 +115,7 @@ export default function ProductsPage() {
               <div>
                 <h3 className="mb-4 border-b border-gray-200 pb-2 text-lg font-bold">دسته‌بندی‌ها</h3>
                 <ul className="space-y-2">
-                  {categories.map((category) => (
+                  {transformedCategories.map((category) => (
                     <li key={category.id}>
                       <label className="flex cursor-pointer items-center">
                         <input
@@ -85,28 +123,10 @@ export default function ProductsPage() {
                           name="category"
                           value={category.id}
                           className="h-4 w-4 text-blue-600"
-                          defaultChecked={category.id === "all"}
+                          checked={selectedCategory === category.id}
+                          onChange={(e) => setSelectedCategory(e.target.value)}
                         />
                         <span className="mr-2 text-gray-700">{category.name}</span>
-                      </label>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="mb-4 border-b border-gray-200 pb-2 text-lg font-bold">برند‌ها</h3>
-                <ul className="space-y-2">
-                  {brands.map((brand) => (
-                    <li key={brand.id}>
-                      <label className="flex cursor-pointer items-center">
-                        <input
-                          type="checkbox"
-                          name="brand"
-                          value={brand.id}
-                          className="h-4 w-4 rounded text-blue-600"
-                        />
-                        <span className="mr-2 text-gray-700">{brand.name}</span>
                       </label>
                     </li>
                   ))}
@@ -119,7 +139,14 @@ export default function ProductsPage() {
                   {priceRanges.map((range) => (
                     <li key={range.id}>
                       <label className="flex cursor-pointer items-center">
-                        <input type="radio" name="price" value={range.id} className="h-4 w-4 text-blue-600" />
+                        <input 
+                          type="radio" 
+                          name="price" 
+                          value={range.id} 
+                          className="h-4 w-4 text-blue-600"
+                          checked={selectedPriceRange === range.id}
+                          onChange={(e) => setSelectedPriceRange(e.target.value)}
+                        />
                         <span className="mr-2 text-gray-700">{range.name}</span>
                       </label>
                     </li>
@@ -137,6 +164,8 @@ export default function ProductsPage() {
                         name="feature"
                         value="discount"
                         className="h-4 w-4 rounded text-blue-600"
+                        checked={showOnlyDiscounted}
+                        onChange={(e) => setShowOnlyDiscounted(e.target.checked)}
                       />
                       <span className="mr-2 text-gray-700">فقط کالاهای تخفیف‌دار</span>
                     </label>
@@ -148,21 +177,25 @@ export default function ProductsPage() {
                         name="feature"
                         value="available"
                         className="h-4 w-4 rounded text-blue-600"
+                        checked={showOnlyAvailable}
+                        onChange={(e) => setShowOnlyAvailable(e.target.checked)}
                       />
                       <span className="mr-2 text-gray-700">فقط کالاهای موجود</span>
-                    </label>
-                  </li>
-                  <li>
-                    <label className="flex cursor-pointer items-center">
-                      <input type="checkbox" name="feature" value="new" className="h-4 w-4 rounded text-blue-600" />
-                      <span className="mr-2 text-gray-700">فقط کالاهای جدید</span>
                     </label>
                   </li>
                 </ul>
               </div>
 
-              <button className="w-full rounded-lg bg-blue-600 py-2 font-medium text-white transition-colors hover:bg-blue-700">
-                اعمال فیلترها
+              <button 
+                className="w-full rounded-lg bg-blue-600 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+                onClick={() => {
+                  setSelectedCategory("all")
+                  setSelectedPriceRange("")
+                  setShowOnlyDiscounted(false)
+                  setShowOnlyAvailable(false)
+                }}
+              >
+                پاک کردن فیلترها
               </button>
             </div>
           </div>
@@ -173,12 +206,15 @@ export default function ProductsPage() {
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg bg-white p-4 shadow-md">
               <div className="flex items-center gap-2">
                 <span className="text-gray-600">مرتب‌سازی بر اساس:</span>
-                <select className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm">
-                  <option>پرفروش‌ترین</option>
-                  <option>جدیدترین</option>
-                  <option>ارزان‌ترین</option>
-                  <option>گران‌ترین</option>
-                  <option>بیشترین تخفیف</option>
+                <select 
+                  className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="newest">جدیدترین</option>
+                  <option value="price-asc">ارزان‌ترین</option>
+                  <option value="price-desc">گران‌ترین</option>
+                  <option value="discount">بیشترین تخفیف</option>
                 </select>
               </div>
 
@@ -212,32 +248,37 @@ export default function ProductsPage() {
                       />
                     </svg>
                   </button>
-                  <button className="rounded-md p-1 text-gray-400 hover:bg-gray-100">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6h16M4 10h16M4 14h16M4 18h7"
-                      />
-                    </svg>
-                  </button>
                 </div>
               </div>
             </div>
 
             {/* Products Grid */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {products.map((product) => (
-                <EnhancedProductCard key={product.id} product={product} />
+              {sortedProducts.map((product) => (
+                <EnhancedProductCard 
+                  key={product.id} 
+                  product={{
+                    id: product.id,
+                    title: product.title,
+                    price: product.price,
+                    discountedPrice: product.discount_price || 0,
+                    discount: product.discount_price ? Math.round(((product.price - product.discount_price) / product.price) * 100) : 0,
+                    image: product.image_path || `/placeholder.svg?height=300&width=300&query=product+${product.id}`,
+                    isNew: false,
+                    rating: 4.5,
+                    category: product.category?.name || "بدون دسته‌بندی",
+                    description: product.description,
+                    inventory: product.inventory
+                  }} 
+                />
               ))}
             </div>
+
+            {sortedProducts.length === 0 && (
+              <div className="mt-8 text-center text-gray-500">
+                محصولی با فیلترهای انتخاب شده یافت نشد
+              </div>
+            )}
 
             {/* Pagination */}
             <div className="mt-8 flex justify-center">
@@ -279,8 +320,6 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   )
 }

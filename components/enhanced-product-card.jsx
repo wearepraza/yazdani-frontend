@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Heart, ShoppingCart, Star } from "lucide-react"
+import { STORAGE } from "@/lib/api/config"
 
 export default function EnhancedProductCard({ product, showActions = true }) {
   const { id, title, price, discountedPrice, discount, image, isNew, rating, category } = product
@@ -25,7 +26,7 @@ export default function EnhancedProductCard({ product, showActions = true }) {
       {/* Image container with hover effect */}
       <div className="relative h-48 overflow-hidden">
         <img
-          src={image || "/placeholder.svg?height=192&width=256&query=product"}
+          src={image ? `${STORAGE}${image}` : "/placeholder.svg?height=192&width=256&query=product"}
           alt={title}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />

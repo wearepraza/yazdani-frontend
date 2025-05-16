@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { listProducts } from "@/lib/api/main/listProducts"
 import { detailsProducts } from "@/lib/api/main/detailsProducts"
-import { BASE_URL } from "@/lib/api/config"
+import { STORAGE } from "@/lib/api/config"
+import { listGallery } from "@/lib/api/admin/product/gallery/listGallery"
 import Image from "next/image"
 export default function ProductsPage() {
   const [products, setProducts] = useState([])
@@ -37,6 +38,23 @@ export default function ProductsPage() {
   
     fetchProducts()
   }, [])
+
+  useEffect(() => {
+    const fetchGalleries = async () => {
+      for (const product of products) {
+        try {
+          const galleryResponse = await listGallery(product.id)
+          console.log(`Gallery for product ${product.id}:`, galleryResponse)
+        } catch (error) {
+          console.error(`Error fetching gallery for product ${product.id}:`, error)
+        }
+      }
+    }
+
+    if (products.length > 0) {
+      fetchGalleries()
+    }
+  }, [products])
   
 
   const getStatusColor = (status) => {
@@ -119,7 +137,7 @@ export default function ProductsPage() {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
-                          <Image src={`${BASE_URL}${product.image_path}`} alt="product" width={16} height={16} className="text-gray-400" />
+                          <Image src={`${STORAGE}${product.image_path}`} alt="product" width={16} height={16} className="text-gray-400" />
                         </div>
                         <span className="font-medium text-gray-900">{product.title}</span>
                       </div>

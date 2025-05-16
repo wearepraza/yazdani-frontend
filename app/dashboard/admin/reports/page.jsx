@@ -37,7 +37,7 @@ export default function ReportsPage() {
         const topProductsResponse = await topProductsReports();
         console.log('Top Products Response:', topProductsResponse);
         if (topProductsResponse?.data) {
-          setTopProducts(topProductsResponse.data);
+          setTopProducts(topProductsResponse.data.top_products);
         }
 
         // Fetch timeline data
@@ -80,7 +80,7 @@ export default function ReportsPage() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">کل فروش</p>
-              <h3 className="text-2xl font-bold">{summaryData?.total_sales || '۰'}</h3>
+              <h3 className="text-2xl font-bold">{summaryData?.total_revenue || '۰'} تومان</h3>
               <div className="flex items-center mt-2 text-green-500 text-sm">
                 <ArrowUpRight size={16} className="mr-1" />
                 <span>{summaryData?.sales_growth || '۰'}٪ نسبت به ماه قبل</span>
@@ -128,7 +128,7 @@ export default function ReportsPage() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">میانگین سفارش</p>
-              <h3 className="text-2xl font-bold">{summaryData?.average_order || '۰'}</h3>
+              <h3 className="text-2xl font-bold">{summaryData?.average_order_value || '۰'} تومان</h3>
               <div className="flex items-center mt-2 text-green-500 text-sm">
                 <ArrowUpRight size={16} className="mr-1" />
                 <span>{summaryData?.average_order_growth || '۰'}٪ نسبت به ماه قبل</span>
@@ -208,10 +208,10 @@ export default function ReportsPage() {
                 topProducts.map((item, index) => (
                   <div key={index} className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium text-sm">{item.name}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{item.count} فروش</p>
+                      <h3 className="font-medium text-sm">{item.title}</h3>
+                      <p className="text-xs text-gray-500 mt-1">{item.total_sales} فروش</p>
                     </div>
-                    <div className="text-sm font-medium">{item.amount}</div>
+                    <div className="text-sm font-medium">{parseInt(item.total_revenue).toLocaleString('fa-IR')} تومان</div>
                   </div>
                 ))
               ) : (

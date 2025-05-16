@@ -4,217 +4,54 @@ import EnhancedProductCard from "@/components/enhanced-product-card"
 import { Footer } from "@/components/footer"
 import {listProducts} from "@/lib/api/main/listProducts"
 import { listCategory } from "@/lib/api/main/listCategory";
-import { useEffect } from "react"
-// Sample data for products
-const featuredProducts = [
-  {
-    id: 1,
-    title: "هدفون بی سیم سونی WH-1000XM4",
-    price: 8500000,
-    discountedPrice: 7650000,
-    discount: 10,
-    image: "/diverse-people-listening-headphones.png",
-    isNew: true,
-    rating: 4.8,
-    category: "هدفون و صوتی",
-  },
-  {
-    id: 2,
-    title: "لپ تاپ اپل مک بوک پرو M1",
-    price: 52000000,
-    discountedPrice: 49400000,
-    discount: 5,
-    image: "/silver-macbook-on-desk.png",
-    isNew: false,
-    rating: 4.9,
-    category: "لپ تاپ",
-  },
-  {
-    id: 3,
-    title: "ساعت هوشمند سامسونگ گلکسی واچ 4",
-    price: 6200000,
-    discountedPrice: 5580000,
-    discount: 10,
-    image: "/modern-smartwatch.png",
-    isNew: true,
-    rating: 4.5,
-    category: "ساعت هوشمند",
-  },
-  {
-    id: 4,
-    title: "گوشی موبایل آیفون 13 پرو",
-    price: 42000000,
-    discountedPrice: 39900000,
-    discount: 5,
-    image: "/modern-smartphone.png",
-    isNew: false,
-    rating: 4.7,
-    category: "موبایل",
-  },
-  {
-    id: 5,
-    title: "تبلت سامسونگ گلکسی تب S7",
-    price: 18500000,
-    discountedPrice: 16650000,
-    discount: 10,
-    image: "/modern-tablet-display.png",
-    isNew: true,
-    rating: 4.6,
-    category: "تبلت",
-  },
-  {
-    id: 6,
-    title: "دوربین بدون آینه کانن EOS R5",
-    price: 98000000,
-    discountedPrice: 93100000,
-    discount: 5,
-    image: "/vintage-camera-still-life.png",
-    isNew: false,
-    rating: 4.9,
-    category: "دوربین",
-  },
-  {
-    id: 7,
-    title: "اسپیکر بلوتوثی JBL Charge 5",
-    price: 4800000,
-    discountedPrice: 4320000,
-    discount: 10,
-    image: "/audio-speaker.png",
-    isNew: true,
-    rating: 4.4,
-    category: "اسپیکر",
-  },
-  {
-    id: 8,
-    title: "کنسول بازی پلی استیشن 5",
-    price: 25000000,
-    discountedPrice: 23750000,
-    discount: 5,
-    image: "/gaming-console-setup.png",
-    isNew: false,
-    rating: 4.8,
-    category: "کنسول بازی",
-  },
-]
-
-const newProducts = [
-  {
-    id: 9,
-    title: "ایرپاد پرو نسل دوم",
-    price: 7200000,
-    discountedPrice: 6480000,
-    discount: 10,
-    image: "/wireless-earbuds.png",
-    isNew: true,
-    rating: 4.7,
-    category: "هدفون و صوتی",
-  },
-  {
-    id: 10,
-    title: "مانیتور گیمینگ ایسوس ROG Swift",
-    price: 32000000,
-    discountedPrice: 30400000,
-    discount: 5,
-    image: "/computer-monitor.png",
-    isNew: true,
-    rating: 4.6,
-    category: "مانیتور",
-  },
-  {
-    id: 11,
-    title: "کیبورد مکانیکی لاجیتک G Pro X",
-    price: 4500000,
-    discountedPrice: 4050000,
-    discount: 10,
-    image: "/mechanical-keyboard.png",
-    isNew: true,
-    rating: 4.5,
-    category: "لوازم جانبی",
-  },
-  {
-    id: 12,
-    title: "ماوس گیمینگ ریزر DeathAdder V2",
-    price: 3200000,
-    discountedPrice: 3040000,
-    discount: 5,
-    image: "/field-mouse.png",
-    isNew: true,
-    rating: 4.8,
-    category: "لوازم جانبی",
-  },
-]
-
-const popularProducts = [
-  {
-    id: 13,
-    title: "هارد اکسترنال وسترن دیجیتال 2TB",
-    price: 3800000,
-    discountedPrice: 3420000,
-    discount: 10,
-    image: "/placeholder.svg?key=s42v0",
-    isNew: false,
-    rating: 4.5,
-    category: "ذخیره‌سازی",
-  },
-  {
-    id: 14,
-    title: "پاور بانک انکر 20000mAh",
-    price: 2500000,
-    discountedPrice: 2375000,
-    discount: 5,
-    image: "/portable-power-bank.png",
-    isNew: false,
-    rating: 4.6,
-    category: "لوازم جانبی",
-  },
-  {
-    id: 15,
-    title: "اسپیکر هوشمند گوگل نست",
-    price: 4200000,
-    discountedPrice: 3780000,
-    discount: 10,
-    image: "/placeholder.svg?key=nq4nv",
-    isNew: false,
-    rating: 4.3,
-    category: "اسپیکر",
-  },
-  {
-    id: 16,
-    title: "هاب USB-C مک بوک",
-    price: 1800000,
-    discountedPrice: 1710000,
-    discount: 5,
-    image: "/usb-hub.png",
-    isNew: false,
-    rating: 4.4,
-    category: "لوازم جانبی",
-  },
-]
+import { useEffect, useState } from "react"
 
 export default function HomePage() {
+  const [categories, setCategories] = useState([]);
+  const [parentCategories, setParentCategories] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
 
-useEffect(() => {
-  const fetchProducts = async () => {
-    try {
-      const response = await listProducts();
-      console.log(response);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
-  const fetchCategories = async () => {
-    try {
-      const response = await listCategory();
-      console.log(response);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await listProducts();
+        console.log("Products response:", response); // Debug log
+        if (response?.data) {
+          // Transform the API data to match the product card format
+          const products = response.data.map(product => ({
+            id: product.id,
+            title: product.title,
+            price: product.price,
+            discountedPrice: product.discount_price,
+            discount: product.discount_price ? Math.round(((product.price - product.discount_price) / product.price) * 100) : 0,
+            image: product.image_path ? `/${product.image_path}` : "/placeholder.svg",
+            isNew: true,
+            rating: 4.5,
+            category: product.category?.name || "بدون دسته‌بندی",
+          }));
+          console.log("Transformed products:", products); // Debug log
+          setFeaturedProducts(products);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+    const fetchCategories = async () => {
+      try {
+        const response = await listCategory();
+        if (response?.data?.categories) {
+          setCategories(response.data.categories);
+          const parents = response.data.categories.filter(cat => cat.parent_id === null);
+          setParentCategories(parents);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
 
-  fetchProducts();
-  fetchCategories();
-}, []);
-
+    fetchProducts();
+    fetchCategories();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -255,17 +92,17 @@ useEffect(() => {
           <h2 className="mb-8 text-center text-2xl font-bold text-gray-800 md:text-3xl">دسته‌بندی محصولات</h2>
 
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-            {["موبایل", "لپ تاپ", "تبلت", "هدفون", "ساعت هوشمند", "لوازم جانبی"].map((category, index) => (
-              <Link href="/products" key={index}>
+            {parentCategories.map((category) => (
+              <Link href={`/products?category=${category.id}`} key={category.id}>
                 <div className="group flex flex-col items-center rounded-lg bg-white p-4 text-center shadow-md transition-all hover:shadow-lg">
                   <div className="mb-3 h-16 w-16 rounded-full bg-blue-100 p-3 transition-all group-hover:bg-blue-200">
                     <img
-                      src={`/abstract-geometric-shapes.png?height=64&width=64&query=${category}`}
-                      alt={category}
+                      src={`/abstract-geometric-shapes.png?height=64&width=64&query=${category.name}`}
+                      alt={category.name}
                       className="h-full w-full object-contain"
                     />
                   </div>
-                  <h3 className="font-medium text-gray-800">{category}</h3>
+                  <h3 className="font-medium text-gray-800">{category.name}</h3>
                 </div>
               </Link>
             ))}
@@ -284,9 +121,15 @@ useEffect(() => {
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {featuredProducts.slice(0, 8).map((product) => (
-              <EnhancedProductCard key={product.id} product={product} />
-            ))}
+            {featuredProducts && featuredProducts.length > 0 ? (
+              featuredProducts.slice(0, 8).map((product) => (
+                <EnhancedProductCard key={product.id} product={product} />
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500">
+                محصولی یافت نشد
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -313,68 +156,6 @@ useEffect(() => {
         </div>
       </section>
 
-      {/* New Arrivals Section */}
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-800 md:text-3xl">محصولات جدید</h2>
-            <Link href="/products" className="text-blue-600 hover:text-blue-700">
-              مشاهده همه
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {newProducts.map((product) => (
-              <EnhancedProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Popular Products Section */}
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-800 md:text-3xl">محصولات پرفروش</h2>
-            <Link href="/products" className="text-blue-600 hover:text-blue-700">
-              مشاهده همه
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {popularProducts.map((product) => (
-              <EnhancedProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="mb-8 text-center text-2xl font-bold text-gray-800 md:text-3xl">چرا ما را انتخاب کنید؟</h2>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { title: "ارسال سریع", desc: "تحویل در کمترین زمان ممکن", icon: "🚚" },
-              { title: "ضمانت اصالت", desc: "تضمین اصالت تمامی محصولات", icon: "✅" },
-              { title: "پشتیبانی ۲۴/۷", desc: "پاسخگویی در تمام ساعات", icon: "📞" },
-              { title: "بازگشت رایگان", desc: "۷ روز ضمانت بازگشت کالا", icon: "🔄" },
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className="rounded-lg bg-blue-50 p-6 text-center shadow-sm transition-all hover:shadow-md"
-              >
-                <div className="mb-4 text-4xl">{feature.icon}</div>
-                <h3 className="mb-2 text-lg font-bold text-gray-800">{feature.title}</h3>
-                <p className="text-gray-600">{feature.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <Footer />
     </div>
   )
 }
