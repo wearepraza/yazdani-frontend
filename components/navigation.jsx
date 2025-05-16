@@ -17,7 +17,7 @@ export function Navigation() {
               </Link>
               <div className="relative group">
                 <button className="flex items-center gap-1 font-medium hover:text-primary transition-colors">
-                  <span>محصولات</span>
+                  <span>دسته بندی محصولات</span>
                   <ChevronDown size={16} />
                 </button>
                 <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
@@ -43,9 +43,6 @@ export function Navigation() {
                   </div>
                 </div>
               </div>
-              <Link href="/products/discounts" className="font-medium hover:text-primary transition-colors">
-                تخفیف‌ها
-              </Link>
               <Link href="/about" className="font-medium hover:text-primary transition-colors">
                 درباره ما
               </Link>
@@ -73,9 +70,6 @@ export function Navigation() {
             <div className="flex items-center gap-2">
               <Link href="/cart" className="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
                 <ShoppingCart size={22} className="text-gray-700" />
-                <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                  2
-                </span>
               </Link>
               <Link href="/dashboard/user" className="p-2 rounded-full hover:bg-gray-100 transition-colors">
                 <User size={22} className="text-gray-700" />
