@@ -20,14 +20,22 @@ export default function ClubPage() {
     setIsUnlocked(true)
   }
 
-  const handleWithdraw = async () => {
+  const handleWithdraw = async (type) => {
     try {
-      const response = await withdrawRewards({
-        amount: 10000, 
-        type_method: "bank", 
-        iban: "IR123456789" 
-      });
-      console.log("Withdraw Rewards Response:", response);
+      if (type === 'bank') {
+        const response = await withdrawRewards({
+          amount: 10000,
+          type_method: "bank",
+          iban: "IR123456789"
+        });
+        console.log("Withdraw Rewards Response:", response);
+      } else if (type === 'shop') {
+        const response = await withdrawRewards({
+          amount: 10000,
+          type_method: "shop"
+        });
+        console.log("Shop Withdraw Response:", response);
+      }
     } catch (error) {
       console.error("Error withdrawing rewards:", error);
     }
@@ -275,8 +283,8 @@ export default function ClubPage() {
           </div>
 
           <div className="flex gap-3 mt-4">
-            <Button onClick={handleWithdraw} className="bg-red-500 hover:bg-red-600 text-white">برداشت</Button>
-            <Button className="bg-blue-500 hover:bg-blue-600 text-white">استفاده در فروشگاه</Button>
+            <Button onClick={() => handleWithdraw('bank')} className="bg-red-500 hover:bg-red-600 text-white">برداشت</Button>
+            <Button onClick={() => handleWithdraw('shop')} className="bg-blue-500 hover:bg-blue-600 text-white">استفاده در فروشگاه</Button>
           </div>
         </div>
       </div>

@@ -1,92 +1,111 @@
+"use client"
+
+import { useEffect, useState, use } from "react"
 import Link from "next/link"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import EnhancedProductCard from "@/components/enhanced-product-card"
 import { Star, Heart, ShoppingCart, Share2, Check, Truck, Shield, RotateCcw } from "lucide-react"
-
-// Sample product data
-const product = {
-  id: 1,
-  title: "هدفون بی سیم سونی WH-1000XM4",
-  description:
-    "هدفون بی‌سیم سونی مدل WH-1000XM4 با تکنولوژی حذف نویز پیشرفته، کیفیت صدای فوق‌العاده و باتری با دوام طولانی. این هدفون با طراحی ارگونومیک و راحت، برای استفاده طولانی مدت مناسب است و با بلوتوث به دستگاه‌های مختلف متصل می‌شود.",
-  price: 8500000,
-  discountedPrice: 7650000,
-  discount: 10,
-  images: [
-    "/placeholder.svg?key=4r315",
-    "/placeholder.svg?height=500&width=500&query=sony+headphones+2",
-    "/placeholder.svg?height=500&width=500&query=sony+headphones+3",
-    "/placeholder.svg?height=500&width=500&query=sony+headphones+4",
-  ],
-  isNew: true,
-  rating: 4.8,
-  reviewCount: 124,
-  category: "هدفون و صوتی",
-  brand: "سونی",
-  availability: true,
-  colors: ["مشکی", "نقره‌ای", "آبی"],
-  specifications: [
-    { name: "نوع اتصال", value: "بی‌سیم (بلوتوث)" },
-    { name: "نوع هدفون", value: "روی گوش (Over-ear)" },
-    { name: "عمر باتری", value: "تا 30 ساعت" },
-    { name: "قابلیت حذف نویز", value: "دارد" },
-    { name: "میکروفون", value: "دارد" },
-    { name: "وزن", value: "254 گرم" },
-    { name: "گارانتی", value: "18 ماه" },
-  ],
-}
-
-// Sample related products
-const relatedProducts = [
-  {
-    id: 2,
-    title: "هدفون بی سیم اپل AirPods Max",
-    price: 12500000,
-    discountedPrice: 11875000,
-    discount: 5,
-    image: "/placeholder.svg?height=300&width=300&query=airpods+max",
-    isNew: false,
-    rating: 4.7,
-    category: "هدفون و صوتی",
-  },
-  {
-    id: 3,
-    title: "هدفون بی سیم بوز QuietComfort 45",
-    price: 7800000,
-    discountedPrice: 7020000,
-    discount: 10,
-    image: "/placeholder.svg?height=300&width=300&query=bose+headphones",
-    isNew: true,
-    rating: 4.6,
-    category: "هدفون و صوتی",
-  },
-  {
-    id: 4,
-    title: "هدفون بی سیم سنهایزر Momentum 4",
-    price: 9200000,
-    discountedPrice: 8740000,
-    discount: 5,
-    image: "/placeholder.svg?height=300&width=300&query=sennheiser+headphones",
-    isNew: false,
-    rating: 4.5,
-    category: "هدفون و صوتی",
-  },
-  {
-    id: 5,
-    title: "هدفون بی سیم جی بی ال Tour One",
-    price: 6500000,
-    discountedPrice: 5850000,
-    discount: 10,
-    image: "/placeholder.svg?height=300&width=300&query=jbl+headphones",
-    isNew: true,
-    rating: 4.4,
-    category: "هدفون و صوتی",
-  },
-]
+import { detailsProducts } from "@/lib/api/main/detailsProducts"
+import { STORAGE } from "@/lib/api/config"
+import { toggleFavoriteUser } from "@/lib/api/user/favorites/toggleFavoriteUser"
+import { toast } from "react-hot-toast"
 
 export default function ProductDetailPage({ params }) {
-  const hasDiscount = product.discount > 0
+  const resolvedParams = use(params)
+  const [product, setProduct] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [relatedProducts, setRelatedProducts] = useState([])
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      try {
+        setLoading(true)
+        const response = await detailsProducts(resolvedParams.id)
+        console.log(response)
+        if (response.error) {
+          setError(response.message)
+        } else {
+          setProduct(response.data)
+          setRelatedProducts(response.data.related_products || [])
+          setIsFavorite(response.data.is_favorite || false)
+        }
+      } catch (err) {
+        setError("خطا در دریافت اطلاعات محصول")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProductDetails()
+  }, [resolvedParams.id])
+
+  const handleToggleFavorite = async () => {
+    if (!product) return
+    
+    try {
+      setIsFavoriteLoading(true)
+      const response = await toggleFavoriteUser(product.id)
+      
+      if (response.error) {
+        toast.error(response.message || "خطا در ثبت علاقه‌مندی")
+      } else {
+        setIsFavorite(!isFavorite)
+        toast.success(isFavorite ? "از علاقه‌مندی‌ها حذف شد" : "به علاقه‌مندی‌ها اضافه شد")
+      }
+    } catch (error) {
+      toast.error("خطا در ثبت علاقه‌مندی")
+    } finally {
+      setIsFavoriteLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center">
+            <div className="text-lg text-gray-600">در حال بارگذاری...</div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center">
+            <div className="text-lg text-red-600">{error}</div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center">
+            <div className="text-lg text-gray-600">محصول یافت نشد</div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  const hasDiscount = product.discount_price !== null
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -104,8 +123,8 @@ export default function ProductDetailPage({ params }) {
               محصولات
             </Link>
             <span className="mx-2">/</span>
-            <Link href={`/products?category=${product.category}`} className="hover:text-blue-600">
-              {product.category}
+            <Link href={`/products?category=${product.category.name}`} className="hover:text-blue-600">
+              {product.category.name}
             </Link>
             <span className="mx-2">/</span>
             <span className="font-medium text-gray-900">{product.title}</span>
@@ -120,14 +139,14 @@ export default function ProductDetailPage({ params }) {
             <div className="space-y-4">
               <div className="overflow-hidden rounded-lg border border-gray-200">
                 <img
-                  src={product.images[0] || "/placeholder.svg"}
+                  src={`${STORAGE}${product.image_path}` || "/placeholder.svg"}
                   alt={product.title}
                   className="h-full w-full object-contain"
                 />
               </div>
 
               <div className="grid grid-cols-4 gap-2">
-                {product.images.map((image, index) => (
+                {product.gallery && product.gallery.map((image, index) => (
                   <div
                     key={index}
                     className={`cursor-pointer overflow-hidden rounded-md border-2 ${
@@ -135,7 +154,7 @@ export default function ProductDetailPage({ params }) {
                     }`}
                   >
                     <img
-                      src={image || "/placeholder.svg"}
+                      src={`${STORAGE}${image}` || "/placeholder.svg"}
                       alt={`${product.title} - تصویر ${index + 1}`}
                       className="h-20 w-full object-cover"
                     />
@@ -148,37 +167,7 @@ export default function ProductDetailPage({ params }) {
             <div className="flex flex-col">
               {/* Title and badges */}
               <div className="mb-4">
-                {product.isNew && (
-                  <span className="mb-2 inline-block rounded-full bg-blue-500 px-2 py-1 text-xs font-bold text-white">
-                    جدید
-                  </span>
-                )}
                 <h1 className="text-2xl font-bold text-gray-800">{product.title}</h1>
-              </div>
-
-              {/* Brand */}
-              <div className="mb-4">
-                <span className="text-gray-600">برند: </span>
-                <Link href={`/products?brand=${product.brand}`} className="font-medium text-blue-600 hover:underline">
-                  {product.brand}
-                </Link>
-              </div>
-
-              {/* Rating */}
-              <div className="mb-4 flex items-center">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${
-                        i < Math.floor(product.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="mr-2 text-sm text-gray-600">
-                  {product.rating} ({product.reviewCount} نظر)
-                </span>
               </div>
 
               {/* Price */}
@@ -188,11 +177,11 @@ export default function ProductDetailPage({ params }) {
                     <div className="flex items-center">
                       <span className="text-sm text-gray-500 line-through">{product.price.toLocaleString()} تومان</span>
                       <span className="mr-2 rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white">
-                        {product.discount}% تخفیف
+                        {Math.round(((product.price - product.discount_price) / product.price) * 100)}% تخفیف
                       </span>
                     </div>
                     <div className="text-2xl font-bold text-blue-600">
-                      {product.discountedPrice.toLocaleString()} تومان
+                      {product.discount_price.toLocaleString()} تومان
                     </div>
                   </div>
                 ) : (
@@ -200,24 +189,9 @@ export default function ProductDetailPage({ params }) {
                 )}
               </div>
 
-              {/* Color Selection */}
-              <div className="mb-6">
-                <h3 className="mb-2 text-sm font-medium text-gray-700">رنگ:</h3>
-                <div className="flex gap-2">
-                  {product.colors.map((color, index) => (
-                    <label key={index} className="cursor-pointer">
-                      <input type="radio" name="color" className="peer sr-only" defaultChecked={index === 0} />
-                      <div className="rounded-lg border-2 border-transparent px-3 py-1 peer-checked:border-blue-500 peer-checked:bg-blue-50">
-                        {color}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
               {/* Availability */}
               <div className="mb-6">
-                {product.availability ? (
+                {product.inventory > 0 ? (
                   <div className="flex items-center text-green-600">
                     <Check className="h-5 w-5" />
                     <span className="mr-1 font-medium">موجود در انبار</span>
@@ -235,8 +209,14 @@ export default function ProductDetailPage({ params }) {
                     <span className="mr-2">افزودن به سبد خرید</span>
                   </div>
                 </button>
-                <button className="rounded-lg border border-gray-300 bg-white p-3 text-gray-600 transition-colors hover:bg-gray-50">
-                  <Heart className="h-5 w-5" />
+                <button 
+                  onClick={handleToggleFavorite}
+                  disabled={isFavoriteLoading}
+                  className={`rounded-lg border border-gray-300 p-3 transition-colors hover:bg-gray-50 ${
+                    isFavorite ? "bg-red-50 text-red-500 border-red-200" : "bg-white text-gray-600"
+                  }`}
+                >
+                  <Heart className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`} />
                 </button>
                 <button className="rounded-lg border border-gray-300 bg-white p-3 text-gray-600 transition-colors hover:bg-gray-50">
                   <Share2 className="h-5 w-5" />
@@ -290,10 +270,10 @@ export default function ProductDetailPage({ params }) {
                 <h3 className="text-lg font-medium text-gray-800">مشخصات فنی</h3>
               </div>
               <div className="divide-y divide-gray-200">
-                {product.specifications.map((spec, index) => (
+                {product.features && product.features.map((feature, index) => (
                   <div key={index} className="flex flex-wrap px-6 py-4 even:bg-gray-50">
-                    <div className="w-full font-medium text-gray-600 md:w-1/3">{spec.name}</div>
-                    <div className="w-full text-gray-800 md:w-2/3">{spec.value}</div>
+                    <div className="w-full font-medium text-gray-600 md:w-1/3">{feature.name}</div>
+                    <div className="w-full text-gray-800 md:w-2/3">{feature.value}</div>
                   </div>
                 ))}
               </div>
@@ -302,14 +282,16 @@ export default function ProductDetailPage({ params }) {
         </div>
 
         {/* Related Products */}
-        <div className="mt-12">
-          <h2 className="mb-6 text-2xl font-bold text-gray-800">محصولات مرتبط</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {relatedProducts.map((product) => (
-              <EnhancedProductCard key={product.id} product={product} />
-            ))}
+        {relatedProducts.length > 0 && (
+          <div className="mt-12">
+            <h2 className="mb-6 text-2xl font-bold text-gray-800">محصولات مرتبط</h2>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {relatedProducts.map((product) => (
+                <EnhancedProductCard key={product.id} product={product} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <Footer />
