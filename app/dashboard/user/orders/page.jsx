@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { listOrdersUser } from "@/lib/api/user/orders/listOrdersUser"
 import { useEffect, useState } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([])
@@ -27,7 +28,7 @@ export default function OrdersPage() {
       if (response.error) {
         setError(response.message)
       } else {
-        setOrders(response.data || [])
+        setOrders(response.data.orders || [])
       }
     } catch (err) {
       console.error("Error fetching orders:", err)
@@ -71,8 +72,18 @@ export default function OrdersPage() {
 
       {/* Loading State */}
       {loading && (
-        <div className="text-center py-8">
-          <p>در حال بارگذاری...</p>
+        <div className="space-y-4">
+          {[1, 2, 3].map((index) => (
+            <div key={index} className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex justify-between items-center">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <Skeleton className="h-6 w-20" />
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

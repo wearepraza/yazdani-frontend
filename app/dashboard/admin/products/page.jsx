@@ -189,7 +189,7 @@ export default function ProductsPage() {
                     <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
+                          <div className="w-10 h-10 bg-gray-100 rounded flex items-center overflow-hidden justify-center">
                             <Image src={`${STORAGE}${product.image_path}`} alt="product" width={128} height={128} className="text-gray-400" />
                           </div>
                           <span className="font-medium text-gray-900">{product.title}</span>

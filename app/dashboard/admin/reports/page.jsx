@@ -5,6 +5,7 @@ import { summuryReports } from "@/lib/api/admin/reports/summuryReports"
 import { topProductsReports } from "@/lib/api/admin/reports/topProductsReports"
 import { getTimelineReports } from "@/lib/api/admin/reports/timelineReports"
 import { useEffect, useState } from "react"
+import ReportsLoading from "./loading"
 
 export default function ReportsPage() {
   const [summaryData, setSummaryData] = useState({
@@ -57,14 +58,7 @@ export default function ReportsPage() {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="p-6 flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">در حال بارگذاری...</p>
-        </div>
-      </div>
-    );
+    return <ReportsLoading />
   }
 
   return (
@@ -187,7 +181,7 @@ export default function ReportsPage() {
                   );
                 }).filter(Boolean) // Remove null items
               ) : (
-                <p className="text-center text-gray-500">اطلاعاتی موجود نیست</p>
+                <p className="text-center text-gray-500">هنوز سفارشی ثبت نشده </p>
               )}
             </div>
           </div>
@@ -215,7 +209,7 @@ export default function ReportsPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-center text-gray-500">اطلاعاتی موجود نیست</p>
+                <p className="text-center text-gray-500 text-sm">هنوز سفارشی ثبت نشده </p>
               )}
             </div>
           </div>
@@ -266,7 +260,7 @@ export default function ReportsPage() {
               ) : (
                 <tr>
                   <td colSpan="6" className="py-4 px-6 text-center text-gray-500">
-                    اطلاعاتی موجود نیست
+                  <p className="text-center text-gray-500">هنوز سفارشی ثبت نشده </p>
                   </td>
                 </tr>
               )}
