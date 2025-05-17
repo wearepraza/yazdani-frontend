@@ -1,8 +1,46 @@
+"use client"
 import { ShoppingBag, Search, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { listOrdersUser } from "@/lib/api/user/orders/listOrdersUser"
+import { useEffect, useState } from "react"
 
 export default function OrdersPage() {
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  useEffect(() => {
+    fetchOrders()
+  }, [])
+
+  const fetchOrders = async () => {
+    try {
+      console.log("Fetching orders...")
+      const response = await listOrdersUser({
+        search: searchQuery,
+        per_page: 10
+      })
+      console.log("Orders response:", response)
+      
+      if (response.error) {
+        setError(response.message)
+      } else {
+        setOrders(response.data || [])
+      }
+    } catch (err) {
+      console.error("Error fetching orders:", err)
+      setError("خطا در دریافت اطلاعات سفارش‌ها")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value)
+  }
+
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -20,6 +58,8 @@ export default function OrdersPage() {
             type="text"
             placeholder="جستجو در سفارش‌ها..."
             className="w-full bg-white border border-gray-200 rounded-lg py-2 pr-10 pl-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            value={searchQuery}
+            onChange={handleSearch}
           />
         </div>
 
@@ -29,19 +69,56 @@ export default function OrdersPage() {
         </Button>
       </div>
 
-      {/* Empty State */}
-      <div className="bg-gray-50 rounded-xl p-8 border border-gray-100 flex flex-col items-center justify-center text-center">
-        <div className="bg-white p-4 rounded-full mb-3 shadow-sm">
-          <ShoppingBag className="h-8 w-8 text-gray-400" />
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <p>در حال بارگذاری...</p>
         </div>
-        <h3 className="text-lg font-medium mb-2">هنوز سفارشی ثبت نکرده‌اید</h3>
-        <p className="text-gray-500 mb-4 max-w-md">
-          با ثبت اولین سفارش خود، می‌توانید از امکانات باشگاه مشتریان بهره‌مند شوید.
-        </p>
-        <Link href="#" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-          مشاهده محصولات
-        </Link>
-      </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
+          {error}
+        </div>
+      )}
+
+      {/* Orders List */}
+      {!loading && !error && orders.length > 0 && (
+        <div className="space-y-4">
+          {orders.map((order) => (
+            <div key={order.id} className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-medium">سفارش #{order.id}</h3>
+                  <p className="text-sm text-gray-500">{order.created_at}</p>
+                </div>
+                <div className="text-left">
+                  <span className="inline-block px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                    {order.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && orders.length === 0 && (
+        <div className="bg-gray-50 rounded-xl p-8 border border-gray-100 flex flex-col items-center justify-center text-center">
+          <div className="bg-white p-4 rounded-full mb-3 shadow-sm">
+            <ShoppingBag className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium mb-2">هنوز سفارشی ثبت نکرده‌اید</h3>
+          <p className="text-gray-500 mb-4 max-w-md">
+            با ثبت اولین سفارش خود، می‌توانید از امکانات باشگاه مشتریان بهره‌مند شوید.
+          </p>
+          <Link href="#" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+            مشاهده محصولات
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

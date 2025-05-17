@@ -6,6 +6,7 @@ import { useEffect,useState } from "react"
 import { myCards } from "@/lib/api/user/cards/myCards"
 import { allCards } from "@/lib/api/user/cards/allCards"
 import moment from "moment-jalaali"
+import CreditCardsLoading from "./loading"
 // Updated credit cards data based on the new requirements
 const creditCards = [
   {
@@ -136,6 +137,7 @@ const creditCards = [
 export default function CreditCardsPage() {
   const [userCards, setUserCards] = useState([])
   const [availableCards, setAvailableCards] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
   // Mapping for colors and icons based on card ID - adjust as needed
   const cardStyles = {
@@ -173,6 +175,7 @@ export default function CreditCardsPage() {
   useEffect(() => {
     const fetchCards = async () => {
       try {
+        setIsLoading(true)
         const response = await myCards()
         const cards = response?.data?.my_cards || []
   
@@ -220,6 +223,8 @@ export default function CreditCardsPage() {
         setAvailableCards(formatted)
       } catch (error) {
         console.error("Error fetching available credit cards:", error)
+      } finally {
+        setIsLoading(false)
       }
     }
     
@@ -228,6 +233,9 @@ export default function CreditCardsPage() {
 
   }, [])
 
+  if (isLoading) {
+    return <CreditCardsLoading />
+  }
 
   return (
     <div>

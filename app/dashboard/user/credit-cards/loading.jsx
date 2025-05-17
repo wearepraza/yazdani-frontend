@@ -1,11 +1,9 @@
 export default function CreditCardsLoading() {
   return (
     <div>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-        <div>
-          <div className="h-8 w-48 bg-gray-200 rounded-md animate-pulse mb-2"></div>
-          <div className="h-5 w-72 bg-gray-200 rounded-md animate-pulse"></div>
-        </div>
+        <div className="mb-12">
+        <div className="h-7 w-36 bg-gray-200 rounded-md animate-pulse mb-6"></div>
+        <div className="h-64 bg-gray-200 rounded-xl animate-pulse"></div>
       </div>
 
       {/* User's Credit Cards Loading */}

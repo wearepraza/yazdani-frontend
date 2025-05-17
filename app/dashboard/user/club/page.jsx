@@ -10,12 +10,27 @@ import { statusRewards } from "@/lib/api/user/club/rewards/statusRewards"
 import { listRewards } from "@/lib/api/user/club/rewards/listRewards"
 import { claimedRewards } from "@/lib/api/user/club/rewards/claimedRewards"
 import { redeemRewards } from "@/lib/api/user/club/rewards/redeemRewards"
+import { conversionsClub } from "@/lib/api/user/club/conversionsClub"
+import { withdrawRewards } from "@/lib/api/user/club/rewards/withdrawRewards"
 
 export default function ClubPage() {
   const [isUnlocked, setIsUnlocked] = useState(false)
 
   const handleUnlock = () => {
     setIsUnlocked(true)
+  }
+
+  const handleWithdraw = async () => {
+    try {
+      const response = await withdrawRewards({
+        amount: 10000, 
+        type_method: "bank", 
+        iban: "IR123456789" 
+      });
+      console.log("Withdraw Rewards Response:", response);
+    } catch (error) {
+      console.error("Error withdrawing rewards:", error);
+    }
   }
 
   useEffect(() => {
@@ -36,8 +51,11 @@ export default function ClubPage() {
         const claimedRewardsResponse = await claimedRewards();
         console.log("Claimed Rewards Response:", claimedRewardsResponse);
 
-        const redeemRewardsResponse = await redeemRewards();
+        const redeemRewardsResponse = await redeemRewards("1");
         console.log("Redeem Rewards Response:", redeemRewardsResponse);
+
+        const conversionsResponse = await conversionsClub();
+        console.log("Conversions Club Response:", conversionsResponse);
 
       } catch (error) {
         console.error("Error fetching club data:", error);
@@ -257,7 +275,7 @@ export default function ClubPage() {
           </div>
 
           <div className="flex gap-3 mt-4">
-            <Button className="bg-red-500 hover:bg-red-600 text-white">برداشت</Button>
+            <Button onClick={handleWithdraw} className="bg-red-500 hover:bg-red-600 text-white">برداشت</Button>
             <Button className="bg-blue-500 hover:bg-blue-600 text-white">استفاده در فروشگاه</Button>
           </div>
         </div>

@@ -16,8 +16,9 @@ export default function OrdersPage() {
     async function fetchOrders() {
       setLoading(true)
       const response = await listOrders()
-      if (response && response.data && response.data.orders) {
-        setOrders(response.data.orders)
+      console.log(response)
+      if (response && response.data) {
+        setOrders(response?.data)
       } else {
         setOrders([])
       }
@@ -26,18 +27,47 @@ export default function OrdersPage() {
     fetchOrders()
   }, [])
 
-  const filteredOrders = orders.filter((order) => order.id.includes(searchTerm) || order.customer.includes(searchTerm))
+  const filteredOrders = orders?.filter((order) => String(order?.id)?.includes(searchTerm) || order.customer.includes(searchTerm))
+  const getStatusText = (status) => {
+    switch (status) {
+      case "completed":
+        return "تکمیل شده"
+      case "delivered":
+        return "تحویل داده شده"
+      case "processing":
+        return "در حال پردازش"
+      case "shipped":
+        return "ارسال شده"
+      case "cancelled":
+        return "لغو شده"
+      default:
+        return status
+    }
+  }
+
+  const getPaymentStatusText = (status) => {
+    switch (status) {
+      case "paid":
+        return "پرداخت شده"
+      case "pending":
+        return "در انتظار پرداخت"
+      case "refunded":
+        return "بازگشت وجه"
+      default:
+        return status
+    }
+  }
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "تکمیل شده":
-      case "تحویل داده شده":
+      case "completed":
+      case "delivered":
         return "bg-green-100 text-green-700"
-      case "در حال پردازش":
+      case "processing":
         return "bg-amber-100 text-amber-700"
-      case "ارسال شده":
+      case "shipped":
         return "bg-blue-100 text-blue-700"
-      case "لغو شده":
+      case "cancelled":
         return "bg-red-100 text-red-700"
       default:
         return "bg-gray-100 text-gray-700"
@@ -46,11 +76,11 @@ export default function OrdersPage() {
 
   const getPaymentStatusColor = (status) => {
     switch (status) {
-      case "پرداخت شده":
+      case "paid":
         return "bg-green-100 text-green-700"
-      case "در انتظار پرداخت":
+      case "pending":
         return "bg-amber-100 text-amber-700"
-      case "بازگشت وجه":
+      case "refunded":
         return "bg-red-100 text-red-700"
       default:
         return "bg-gray-100 text-gray-700"
@@ -115,39 +145,39 @@ export default function OrdersPage() {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <User size={14} className="text-gray-400" />
-                        <span className="text-sm text-gray-600">{order.customer}</span>
+                        <span className="text-sm text-gray-600">{`${order.user.name} ${order.user.surname}`}</span>
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <Calendar size={14} className="text-gray-400" />
-                        <span className="text-sm text-gray-600">{order.date}</span>
+                        <span className="text-sm text-gray-600">{order.created_at || "نامشخص"}</span>
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <CreditCard size={14} className="text-gray-400" />
-                        <span className="text-sm font-medium text-gray-900">{order.total} تومان</span>
+                        <span className="text-sm font-medium text-gray-900">{order.total_amount} تومان</span>
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <Package size={14} className="text-gray-400" />
-                        <span className="text-sm text-gray-600">{order.items} محصول</span>
+                        <span className="text-sm text-gray-600">{Array.isArray(order.items) ? order.items.length : 0} محصول</span>
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}
                       >
-                        {order.status}
+                        {getStatusText(order.status)}
                       </span>
                     </td>
                     <td className="px-4 py-4">
                       <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.paymentStatus)}`}
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.payment_status)}`}
                       >
-                        {order.paymentStatus}
+                        {getPaymentStatusText(order.payment_status)}
                       </span>
                     </td>
                     <td className="px-4 py-4">

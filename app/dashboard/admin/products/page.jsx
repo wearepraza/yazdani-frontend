@@ -39,22 +39,22 @@ export default function ProductsPage() {
     fetchProducts()
   }, [])
 
-  useEffect(() => {
-    const fetchGalleries = async () => {
-      for (const product of products) {
-        try {
-          const galleryResponse = await listGallery(product.id)
-          console.log(`Gallery for product ${product.id}:`, galleryResponse)
-        } catch (error) {
-          console.error(`Error fetching gallery for product ${product.id}:`, error)
-        }
-      }
-    }
+  // useEffect(() => {
+  //   const fetchGalleries = async () => {
+  //     for (const product of products) {
+  //       try {
+  //         const galleryResponse = await listGallery(product.id)
+  //         console.log(`Gallery for product ${product.id}:`, galleryResponse)
+  //       } catch (error) {
+  //         console.error(`Error fetching gallery for product ${product.id}:`, error)
+  //       }
+  //     }
+  //   }
 
-    if (products.length > 0) {
-      fetchGalleries()
-    }
-  }, [products])
+  //   if (products.length > 0) {
+  //     fetchGalleries()
+  //   }
+  // }, [products])
   
 
   const getStatusColor = (status) => {

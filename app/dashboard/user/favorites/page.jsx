@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { ProductCard } from "@/components/product-card"
 import { listFavoriteUser } from "@/lib/api/user/favorites/listFavoriteUser"
+import Loading from "./loading"
 
 export default function FavoritesPage() {
   const [favoriteProducts, setFavoriteProducts] = useState([])
@@ -16,12 +17,7 @@ export default function FavoritesPage() {
       try {
         const resp = await listFavoriteUser()
         console.log("listFavoriteUser response:", resp)
-        // adjust this if your API nests the list under another key:
-        const items = Array.isArray(resp.data?.data)
-          ? resp.data.data
-          : Array.isArray(resp.data)
-          ? resp.data
-          : []
+        const items = resp.data?.favorites
         setFavoriteProducts(items)
       } catch (err) {
         console.error(err)
@@ -34,12 +30,12 @@ export default function FavoritesPage() {
   }, [])
 
   if (loading) {
-    return <p>در حال بارگذاری علاقه‌مندی‌ها...</p>
+    return <Loading />
   }
   if (error) {
     return <p className="text-destructive">{error}</p>
   }
-
+console.log(favoriteProducts)
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">محصولات مورد علاقه</h1>
