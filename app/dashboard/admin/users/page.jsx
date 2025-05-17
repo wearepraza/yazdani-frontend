@@ -5,11 +5,11 @@ import { Search, Filter, Eye, Mail, Phone, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { listUsers } from "@/lib/api/admin/users/listUsers"
-
+import Loading from "./loading"
 export default function UsersPage() {
   const [users, setUsers] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const filteredUsers = users.filter(
     (user) =>
@@ -53,7 +53,9 @@ export default function UsersPage() {
         return "bg-gray-100 text-gray-700"
     }
   }
-
+  if (loading) {
+    return <Loading />
+  }
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">

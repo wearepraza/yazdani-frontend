@@ -1,8 +1,34 @@
+"use client"
 import Link from "next/link"
 import { Logo } from "./logo"
 import { Search, ShoppingCart, User, Menu, ChevronDown } from "lucide-react"
+import { listCategory } from "@/lib/api/main/listCategory"
+import { useState, useEffect } from "react"
 
 export function Navigation() {
+  const [categories, setCategories] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await listCategory()
+        if (response.data?.categories) {
+          // Filter only parent categories (where parent_id is null or 0)
+          const parentCategories = response.data.categories.filter(
+            category => !category.parent_id || category.parent_id === 0
+          )
+          setCategories(parentCategories)
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchCategories()
+  }, [])
+
   return (
     <header className="bg-white shadow-md sticky top-0 z-30">
       <div className="container mx-auto px-4">
@@ -15,33 +41,26 @@ export function Navigation() {
               <Link href="/home" className="font-medium hover:text-primary transition-colors">
                 صفحه اصلی
               </Link>
-              <div className="relative group">
+              <div className={`relative ${isLoading ? '' : 'group'}`}>
                 <button className="flex items-center gap-1 font-medium hover:text-primary transition-colors">
                   <span>دسته بندی محصولات</span>
                   <ChevronDown size={16} />
                 </button>
-                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
-                  <div className="py-2">
-                    <Link href="/products/category/mobile" className="block px-4 py-2 hover:bg-gray-50">
-                      گوشی موبایل
-                    </Link>
-                    <Link href="/products/category/laptop" className="block px-4 py-2 hover:bg-gray-50">
-                      لپ تاپ
-                    </Link>
-                    <Link href="/products/category/tablet" className="block px-4 py-2 hover:bg-gray-50">
-                      تبلت
-                    </Link>
-                    <Link href="/products/category/audio" className="block px-4 py-2 hover:bg-gray-50">
-                      لوازم صوتی
-                    </Link>
-                    <Link href="/products/category/wearable" className="block px-4 py-2 hover:bg-gray-50">
-                      گجت‌های پوشیدنی
-                    </Link>
-                    <Link href="/products/category/accessories" className="block px-4 py-2 hover:bg-gray-50">
-                      لوازم جانبی
-                    </Link>
+                {!isLoading && (
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                    <div className="py-2">
+                      {categories.map((category) => (
+                        <Link 
+                          key={category.id} 
+                          href={`/products/category/${category.id}`} 
+                          className="block px-4 py-2 hover:bg-gray-50"
+                        >
+                          {category.name}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
               <Link href="/about" className="font-medium hover:text-primary transition-colors">
                 درباره ما

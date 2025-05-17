@@ -123,7 +123,7 @@ export default function HomePage() {
       </section>
 
       {/* Banner Section */}
-      <section className="py-12 bg-gray-50">
+      {/* <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg">
             <div className="flex flex-col items-center justify-between gap-6 p-8 md:flex-row">
@@ -142,7 +142,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
     </div>
   )

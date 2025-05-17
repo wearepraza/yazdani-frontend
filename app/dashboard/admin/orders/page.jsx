@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Cookies from "js-cookie"
 import { listOrders } from "@/lib/api/admin/orders/listOrders"
+import Loading from "./loading"
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([])
@@ -85,6 +86,10 @@ export default function OrdersPage() {
       default:
         return "bg-gray-100 text-gray-700"
     }
+  }
+
+  if (loading) {
+    return <Loading />
   }
 
   return (

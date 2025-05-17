@@ -4,10 +4,12 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { User, Package, CreditCard, Heart, Settings, LogOut, Menu, X, Home, Award, ChevronDown } from "lucide-react"
+import { useUserContext } from "@/context/user-context/UserContext"
 
 export default function UserDashboardLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const pathname = usePathname()
+  const { userData, isLoading } = useUserContext()
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -47,11 +49,11 @@ export default function UserDashboardLayout({ children }) {
       href: "/dashboard/user/orders",
       icon: Package,
     },
-    {
-      title: "تراکنش‌ها",
-      href: "/dashboard/user/transactions",
-      icon: CreditCard,
-    },
+    // {
+    //   title: "تراکنش‌ها",
+    //   href: "/dashboard/user/transactions",
+    //   icon: CreditCard,
+    // },
     {
       title: "علاقه‌مندی‌ها",
       href: "/dashboard/user/favorites",
@@ -79,6 +81,13 @@ export default function UserDashboardLayout({ children }) {
     window.location.href = "/auth"
   }
 
+  const UserInfoSkeleton = () => (
+    <div className="animate-pulse">
+      <div className="h-4 w-24 bg-gray-200 rounded mb-1"></div>
+      <div className="h-3 w-32 bg-gray-200 rounded"></div>
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top Navigation */}
@@ -105,8 +114,14 @@ export default function UserDashboardLayout({ children }) {
           <div className="relative group">
             <button className="flex items-center gap-2 py-1 px-2 rounded-lg hover:bg-gray-100 transition-colors">
               <div className="flex flex-col items-end">
-                <span className="text-sm font-medium">کاربر فونیکسو</span>
-                <span className="text-xs text-gray-500">example@email.com</span>
+                {isLoading ? (
+                  <UserInfoSkeleton />
+                ) : (
+                  <>
+                    <span className="text-sm font-medium">{userData?.name || 'کاربر فونیکسو'}</span>
+                    <span className="text-xs text-gray-500">{userData?.mobile_number || 'شماره موبایل'}</span>
+                  </>
+                )}
               </div>
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white shadow-sm">
                 <User size={18} />
@@ -160,8 +175,14 @@ export default function UserDashboardLayout({ children }) {
                   <User size={24} />
                 </div>
                 <div>
-                  <p className="font-bold text-lg">کاربر فونیکسو</p>
-                  <p className="text-sm text-gray-500">example@email.com</p>
+                  {isLoading ? (
+                    <UserInfoSkeleton />
+                  ) : (
+                    <>
+                      <p className="font-bold text-lg">{userData?.name || 'کاربر فونیکسو'}</p>
+                      <p className="text-sm text-gray-500">{userData?.mobile_number || 'شماره موبایل'}</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -216,8 +237,14 @@ export default function UserDashboardLayout({ children }) {
                   <User size={24} />
                 </div>
                 <div>
-                  <p className="font-bold text-lg">کاربر فونیکسو</p>
-                  <p className="text-sm text-gray-500">example@email.com</p>
+                  {isLoading ? (
+                    <UserInfoSkeleton />
+                  ) : (
+                    <>
+                      <p className="font-bold text-lg">{userData?.name || 'کاربر فونیکسو'}</p>
+                      <p className="text-sm text-gray-500">{userData?.mobile_number || 'شماره موبایل'}</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

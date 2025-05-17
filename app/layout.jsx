@@ -1,5 +1,6 @@
 import "./globals.css"
 import { Vazirmatn } from "next/font/google"
+import { UserProvider } from "@/context/user-context/UserContext"
 
 const vazirmatn = Vazirmatn({
   subsets: ["arabic"],
@@ -15,7 +16,11 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="fa" dir="rtl">
-      <body className={`${vazirmatn.variable} font-sans bg-gray-50`}>{children}</body>
+      <body className={`${vazirmatn.variable} font-sans bg-gray-50`}>
+        <UserProvider>
+          {children}
+        </UserProvider>
+      </body>
     </html>
   )
 }

@@ -1,13 +1,13 @@
 import Link from "next/link"
 import { Star, ShoppingCart } from "lucide-react"
-
+import { STORAGE } from "@/lib/api/config"
 export function ProductCard({ product }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-gray-200 group">
       <Link href={`/products/${product.id}`} className="block relative">
         <div className="h-52 md:h-64 p-4 flex items-center justify-center overflow-hidden bg-gray-50/50">
           <img
-            src={product.image || "/placeholder.svg"}
+            src={`${STORAGE}${product.image_url.replace("https://phonixo.praza.ir/storage/", "")}` || "/placeholder.svg"}
             alt={product.title}
             className="h-full w-auto object-contain transition-transform duration-300 group-hover:scale-105"
           />

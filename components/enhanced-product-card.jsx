@@ -57,11 +57,11 @@ export default function EnhancedProductCard({ product, showActions = true }) {
         {/* Quick action buttons that appear on hover */}
         {showActions && (
           <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <Link href={`/products/${id}`}>
+            {/* <Link href={`/products/${id}`}>
               <button className="rounded-full bg-white p-2 text-gray-800 transition-colors hover:bg-blue-500 hover:text-white">
                 <Star className="h-5 w-5" />
               </button>
-            </Link>
+            </Link> */}
             <button 
               onClick={handleFavoriteToggle}
               disabled={isLoading}

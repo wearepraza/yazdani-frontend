@@ -5,11 +5,10 @@ import { Search, Filter, Plus, Edit, Trash, Eye, ImageOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { listProducts } from "@/lib/api/main/listProducts"
-import { detailsProducts } from "@/lib/api/main/detailsProducts"
 import { STORAGE } from "@/lib/api/config"
-import { listGallery } from "@/lib/api/admin/product/gallery/listGallery"
 import { deleteProduct } from "@/lib/api/admin/product/deleteProduct"
 import Image from "next/image"
+import Loading from "./loading"
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([])
@@ -17,11 +16,24 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   const filteredProducts = products.filter(
     (product) =>
-      product.title.includes(searchTerm) || product.category.name.includes(searchTerm),
+      product.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      product.category.name.toLowerCase().includes(searchTerm.toLowerCase()),
   )
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentProducts = filteredProducts.slice(startIndex, endIndex)
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage)
+  }
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -101,6 +113,10 @@ export default function ProductsPage() {
     setProductToDelete(null);
   }
 
+  if (loading) {
+    return <Loading />
+  }
+  
   return (
     <div>
       {/* Header */}
@@ -165,11 +181,7 @@ export default function ProductsPage() {
       )}
 
       {/* Products Table */}
-      {loading ? (
-        <div className="flex justify-center items-center py-20">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      ) : (
+  
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -184,8 +196,8 @@ export default function ProductsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredProducts.length > 0 ? (
-                  filteredProducts.map((product) => (
+                {currentProducts.length > 0 ? (
+                  currentProducts.map((product) => (
                     <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
@@ -240,18 +252,31 @@ export default function ProductsPage() {
             </table>
           </div>
         </div>
-      )}
+    
 
       {/* Pagination */}
       <div className="flex justify-between items-center mt-6">
         <div className="text-sm text-gray-500">
-          نمایش {filteredProducts.length} از {products.length} محصول
+          نمایش {startIndex + 1} تا {Math.min(endIndex, filteredProducts.length)} از {filteredProducts.length} محصول
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
             قبلی
           </Button>
-          <Button variant="outline" size="sm" disabled>
+          <span className="text-sm text-gray-600">
+            صفحه {currentPage} از {totalPages}
+          </span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
             بعدی
           </Button>
         </div>

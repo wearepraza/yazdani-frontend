@@ -32,7 +32,7 @@ export default function ReportsLoading() {
 
           <div className="border-t border-gray-100 pt-6">
             <div className="space-y-6">
-              {[...Array(6)].map((_, index) => (
+              {[...Array(2)].map((_, index) => (
                 <div key={index}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
@@ -41,7 +41,7 @@ export default function ReportsLoading() {
                   <div className="w-full bg-gray-100 rounded-full h-2.5">
                     <div
                       className="bg-gray-200 h-2.5 rounded-full animate-pulse"
-                      style={{ width: `${Math.floor(Math.random() * 100)}%` }}
+                      style={{ width: `${[75, 40, 60, 20, 30, 50][index]}%` }}
                     ></div>
                   </div>
                 </div>
@@ -51,20 +51,19 @@ export default function ReportsLoading() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 gap-3">
             <div className="h-6 w-40 bg-gray-200 rounded animate-pulse"></div>
             <div className="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
           </div>
 
           <div className="border-t border-gray-100 pt-6">
             <div className="space-y-6">
-              {[...Array(5)].map((_, index) => (
+              {[...Array(2)].map((_, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div>
                     <div className="h-5 w-48 bg-gray-200 rounded animate-pulse mb-2"></div>
                     <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
                   </div>
-                  <div className="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
                 </div>
               ))}
             </div>
@@ -85,7 +84,7 @@ export default function ReportsLoading() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-600">
               <tr>
-                {[...Array(6)].map((_, index) => (
+                {[...Array(5)].map((_, index) => (
                   <th key={index} className="py-3 px-6 text-right">
                     <div className="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
                   </th>
@@ -93,9 +92,9 @@ export default function ReportsLoading() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {[...Array(5)].map((_, rowIndex) => (
+              {[...Array(3)].map((_, rowIndex) => (
                 <tr key={rowIndex} className="hover:bg-gray-50">
-                  {[...Array(6)].map((_, colIndex) => (
+                  {[...Array(5)].map((_, colIndex) => (
                     <td key={colIndex} className="py-4 px-6">
                       <div className="h-5 w-28 bg-gray-200 rounded animate-pulse"></div>
                     </td>
