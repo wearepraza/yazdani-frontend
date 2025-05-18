@@ -95,7 +95,6 @@ export default function ClubPage() {
           conversionsClub()
         ]);
 
-        // پردازش نتایج
         if (cardsResponse.data.my_cards && cardsResponse.data.my_cards.length > 0) {
           setHasCards(true);
           setIsUnlocked(true);
@@ -103,7 +102,6 @@ export default function ClubPage() {
 
         setOverviewData(overviewResponse.data);
 
-        // لاگ کردن نتایج
         console.log("Cards Response:", cardsResponse);
         console.log("Convert Club Response:", convertResponse);
         console.log("Overview Club Response:", overviewResponse);

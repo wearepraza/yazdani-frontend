@@ -1,15 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import { Heart, ShoppingCart, Star } from "lucide-react"
+import { Heart, ShoppingCart, Star, Loader2, Check } from "lucide-react"
 import { STORAGE } from "@/lib/api/config"
 import { toggleFavoriteUser } from "@/lib/api/user/favorites/toggleFavoriteUser"
+import { addToCart } from "@/lib/api/user/cart/addToCart"
 import { useState } from "react"
 
 export default function EnhancedProductCard({ product, showActions = true }) {
   const { id, title, price, discountedPrice, discount, image, isNew, rating, category } = product
   const [isFavorite, setIsFavorite] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [isAddedToCart, setIsAddedToCart] = useState(false)
+  const [isInCart, setIsInCart] = useState(false)
 
   const hasDiscount = discount > 0
 
@@ -27,6 +31,35 @@ export default function EnhancedProductCard({ product, showActions = true }) {
       console.error("Error toggling favorite:", error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleAddToCart = async (e) => {
+    e.preventDefault()
+    if (isAddingToCart) return
+
+    setIsAddingToCart(true)
+    setIsAddedToCart(false)
+    try {
+      const payload = {
+        product_id: id,
+        quantity: 1
+      }
+      const response = await addToCart(payload)
+      if (!response.error) {
+        setIsAddedToCart(true)
+        setIsInCart(true)
+        // Reset success state after 2 seconds
+        setTimeout(() => {
+          setIsAddedToCart(false)
+        }, 2000)
+      } else {
+        console.error("Error adding to cart:", response.message)
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error)
+    } finally {
+      setIsAddingToCart(false)
     }
   }
 
@@ -71,8 +104,20 @@ export default function EnhancedProductCard({ product, showActions = true }) {
             >
               <Heart className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`} />
             </button>
-            <button className="rounded-full bg-white p-2 text-gray-800 transition-colors hover:bg-blue-500 hover:text-white">
-              <ShoppingCart className="h-5 w-5" />
+            <button 
+              onClick={handleAddToCart}
+              disabled={isAddingToCart}
+              className={`rounded-full bg-white p-2 transition-colors hover:bg-blue-500 hover:text-white ${
+                isAddedToCart ? "text-green-500" : isInCart ? "text-blue-500" : "text-gray-800"
+              }`}
+            >
+              {isAddingToCart ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : isAddedToCart ? (
+                <Check className="h-5 w-5" />
+              ) : (
+                <ShoppingCart className={`h-5 w-5 ${isInCart ? "fill-current" : ""}`} />
+              )}
             </button>
           </div>
         )}
@@ -115,8 +160,24 @@ export default function EnhancedProductCard({ product, showActions = true }) {
           </div>
 
           {/* Add to cart button */}
-          <button className="rounded-full bg-blue-100 p-2 text-blue-600 transition-all hover:bg-blue-600 hover:text-white">
-            <ShoppingCart className="h-5 w-5" />
+          <button 
+            onClick={handleAddToCart}
+            disabled={isAddingToCart}
+            className={`rounded-full p-2 transition-all ${
+              isAddedToCart 
+                ? "bg-green-100 text-green-600" 
+                : isInCart
+                ? "bg-blue-500 text-white"
+                : "bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white"
+            }`}
+          >
+            {isAddingToCart ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : isAddedToCart ? (
+              <Check className="h-5 w-5" />
+            ) : (
+              <ShoppingCart className={`h-5 w-5 ${isInCart ? "fill-current" : ""}`} />
+            )}
           </button>
         </div>
       </div>
