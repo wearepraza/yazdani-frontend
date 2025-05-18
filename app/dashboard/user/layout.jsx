@@ -11,7 +11,6 @@ export default function UserDashboardLayout({ children }) {
   const pathname = usePathname()
   const { userData, isLoading } = useUserContext()
 
-  // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleClickOutside = (event) => {
       const sidebar = document.getElementById("user-sidebar")
@@ -28,12 +27,16 @@ export default function UserDashboardLayout({ children }) {
     }
   }, [])
 
-  // Close sidebar when route changes on mobile
   useEffect(() => {
     setIsSidebarOpen(false)
   }, [pathname])
 
   const navItems = [
+    {
+      title: "صفحه اصلی",
+      href: "/",
+      icon: Home,
+    },
     {
       title: "داشبورد",
       href: "/dashboard/user",
