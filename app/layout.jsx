@@ -8,9 +8,7 @@ const vazirmatn = Vazirmatn({
 })
 
 export const metadata = {
-  title: "فونیکسو | سامانه ورود",
-  description: "سامانه ورود به حساب کاربری فونیکسو",
-    generator: 'v0.dev'
+  title: "فونیکسو",
 }
 
 export default function RootLayout({ children }) {
