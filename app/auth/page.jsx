@@ -468,20 +468,8 @@ export default function AuthPage() {
           <CardDescription className="text-center">{headerContent.description}</CardDescription>
         </CardHeader>
 
-        {/* Progress indicator - only show for registration */}
-        {isRegistering && (
-          <div className="px-6 mb-4">
-            <div className="w-full bg-muted h-1 rounded-full overflow-hidden">
-              <div
-                className="bg-primary h-full transition-all duration-300 ease-in-out"
-                style={{ width: `${(registrationStep / 2) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        )}
-
         {error && (
-          <div className="px-6 mt-4">
+          <div className="px-6 mb-4 mt-4">
             <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</p>
           </div>
         )}
