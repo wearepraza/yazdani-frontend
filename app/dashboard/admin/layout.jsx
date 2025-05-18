@@ -91,7 +91,9 @@ export default function AdminDashboardLayout({ children }) {
   ]
 
   const handleLogout = () => {
-    // In a real app, you would handle logout logic here
+    // Clear the auth token cookie
+    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    // Redirect to auth page
     window.location.href = "/auth"
   }
 

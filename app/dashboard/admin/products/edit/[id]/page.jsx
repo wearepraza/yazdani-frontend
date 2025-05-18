@@ -71,6 +71,7 @@ export default function EditProductPage() {
       [name]: value,
     }))
   }
+  console.log('Selected image:', productData.image);
 
   const handleFeatureChange = (index, value) => {
     const newFeatures = [...productData.features]
@@ -99,7 +100,15 @@ export default function EditProductPage() {
       features: newFeatures,
     }))
   }
-
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setProductData(prev => ({
+        ...prev,
+        image: file
+      }))
+    }
+  }
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -341,8 +350,13 @@ export default function EditProductPage() {
                 <div className="flex flex-col items-center justify-center">
                   <Upload className="h-10 w-10 text-gray-400 mb-2" />
                   <p className="text-sm text-gray-500 mb-4">فایل تصویر را اینجا رها کنید یا کلیک کنید</p>
-                  <input type="file" className="hidden" id="product-image" />
-                  <label
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    id="product-image" 
+                    onChange={handleImageChange}
+                    accept="image/*"
+                  />                  <label
                     htmlFor="product-image"
                     className="bg-primary text-white px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-primary/90 transition-colors"
                   >

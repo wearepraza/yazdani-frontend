@@ -12,9 +12,20 @@ import { claimedRewards } from "@/lib/api/user/club/rewards/claimedRewards"
 import { redeemRewards } from "@/lib/api/user/club/rewards/redeemRewards"
 import { conversionsClub } from "@/lib/api/user/club/conversionsClub"
 import { withdrawRewards } from "@/lib/api/user/club/rewards/withdrawRewards"
+import { myCards } from "@/lib/api/user/cards/myCards"
 
 export default function ClubPage() {
   const [isUnlocked, setIsUnlocked] = useState(false)
+  const [hasCards, setHasCards] = useState(false)
+  const [overviewData, setOverviewData] = useState({
+    coins: 0,
+    level: "bronze",
+    next_level: "silver",
+    points: 0,
+    points_to_next: 100,
+    rewards: [],
+    stars: 0
+  })
 
   const handleUnlock = () => {
     setIsUnlocked(true)
@@ -41,14 +52,37 @@ export default function ClubPage() {
     }
   }
 
+  const handleConvert = async () => {
+    try {
+      const response = await convertClub();
+      if (response.error) {
+        console.error("Error converting:", response.message);
+        return;
+      }
+      console.log("Convert Response:", response);
+      // Refresh the overview data after successful conversion
+      const overviewResponse = await overviewClub();
+      setOverviewData(overviewResponse.data);
+    } catch (error) {
+      console.error("Error converting:", error);
+    }
+  }
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const cardsResponse = await myCards();
+        console.log(cardsResponse)
+        if (cardsResponse.data.my_cards && cardsResponse.data.my_cards.length > 0) {
+          setHasCards(true);
+          setIsUnlocked(true);
+        }
         const convertResponse = await convertClub();
         console.log("Convert Club Response:", convertResponse);
 
         const overviewResponse = await overviewClub();
         console.log("Overview Club Response:", overviewResponse);
+        setOverviewData(overviewResponse.data);
 
         const statusRewardsResponse = await statusRewards();
         console.log("Status Rewards Response:", statusRewardsResponse);
@@ -64,6 +98,8 @@ export default function ClubPage() {
 
         const conversionsResponse = await conversionsClub();
         console.log("Conversions Club Response:", conversionsResponse);
+
+        // Fetch cards data
 
       } catch (error) {
         console.error("Error fetching club data:", error);
@@ -101,10 +137,10 @@ export default function ClubPage() {
           <div className="flex-1">
             <div className="flex justify-between mb-2">
               <span className="text-sm text-gray-500">تعداد ستاره‌های کسب شده</span>
-              <span className="font-bold">۳ از ۱۰</span>
+              <span className="font-bold">{overviewData.stars} از ۱۰</span>
             </div>
             <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-amber-500 rounded-full" style={{ width: "30%" }}></div>
+              <div className="h-full bg-amber-500 rounded-full" style={{ width: `${(overviewData.stars / 10) * 100}%` }}></div>
             </div>
             <p className="text-xs text-gray-500 mt-2">هر دعوت مستقیم = ۱ ستاره</p>
           </div>
@@ -115,7 +151,7 @@ export default function ClubPage() {
                 <div
                   key={i}
                   className={`w-6 h-6 flex items-center justify-center rounded-full border ${
-                    i < 3 ? "bg-amber-500 text-white border-amber-600" : "bg-gray-100 border-gray-200"
+                    i < overviewData.stars ? "bg-amber-500 text-white border-amber-600" : "bg-gray-100 border-gray-200"
                   }`}
                 >
                   <Star className="h-3 w-3" />
@@ -145,10 +181,10 @@ export default function ClubPage() {
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm text-gray-500">کل سکه‌های کسب شده</span>
-              <span className="font-bold">۴,۵۰۰</span>
+              <span className="font-bold">{overviewData.coins}</span>
             </div>
             <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-yellow-500 rounded-full" style={{ width: "45%" }}></div>
+              <div className="h-full bg-yellow-500 rounded-full" style={{ width: `${(overviewData.coins / 10000) * 100}%` }}></div>
             </div>
             <p className="text-xs text-gray-500 mt-2">از ۵ سطح دعوت‌های شما</p>
           </div>
@@ -156,19 +192,19 @@ export default function ClubPage() {
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm text-gray-500">سکه‌های قابل استفاده</span>
-              <span className="font-bold">۳,۰۰۰</span>
+              <span className="font-bold">{overviewData.stars * 1000}</span>
             </div>
             <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-yellow-500 rounded-full" style={{ width: "30%" }}></div>
+              <div className="h-full bg-yellow-500 rounded-full" style={{ width: `${(overviewData.stars * 1000 / 10000) * 100}%` }}></div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">بر اساس ستاره‌های آزاد شده (۳ ستاره)</p>
+            <p className="text-xs text-gray-500 mt-2">بر اساس ستاره‌های آزاد شده ({overviewData.stars} ستاره)</p>
           </div>
         </div>
       </div>
 
       {/* Locked Sections Container */}
       <div className="relative mb-6">
-        {!isUnlocked && (
+        {!isUnlocked && !hasCards && (
           <div className="absolute inset-0 bg-gradient-to-br from-gray-100/90 to-gray-200/90 backdrop-blur-[2px] flex items-center justify-center rounded-xl z-20">
             <div className="bg-white p-6 rounded-xl shadow-md text-center max-w-md mx-4">
               <div className="bg-blue-50 p-3 rounded-full mx-auto w-fit mb-4">
@@ -220,12 +256,12 @@ export default function ClubPage() {
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm text-gray-500">امتیازات کسب شده</span>
-              <span className="font-bold">۰ از ۱۰,۰۰۰</span>
+              <span className="font-bold">{overviewData.points} از {overviewData.points_to_next}</span>
             </div>
             <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-green-500 rounded-full" style={{ width: "0%" }}></div>
+              <div className="h-full bg-green-500 rounded-full" style={{ width: `${(overviewData.points / overviewData.points_to_next) * 100}%` }}></div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">بر اساس خریدهای انجام شده توسط شبکه شما</p>
+            <p className="text-xs text-gray-500 mt-2">سطح فعلی: {overviewData.level} - سطح بعدی: {overviewData.next_level}</p>
           </div>
         </div>
 
@@ -244,7 +280,7 @@ export default function ClubPage() {
                 <p className="font-medium">۱ امتیاز + ۱ سکه = ۱۰,۰۰۰ تومان جایزه</p>
                 <p className="text-sm text-gray-500 mt-1">تبدیل‌های در دسترس: ۰</p>
               </div>
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white">تبدیل</Button>
+              <Button onClick={handleConvert} className="bg-purple-600 hover:bg-purple-700 text-white">تبدیل</Button>
             </div>
           </div>
 

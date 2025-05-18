@@ -87,7 +87,6 @@ export default function AddProductPage() {
       setTimeout(() => setSuccess(false), 3000)
     } catch (error) {
       console.error('Error creating product:', error)
-      // اینجا می‌تونید یک state برای نمایش خطا اضافه کنید
     } finally {
       setLoading(false)
     }

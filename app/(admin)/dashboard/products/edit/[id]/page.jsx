@@ -6,70 +6,7 @@ import { Save, X, Upload, Plus, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-
-// Sample products data for editing
-const sampleProducts = [
-  {
-    id: 1,
-    title: "گوشی موبایل سامسونگ گلکسی S23 Ultra",
-    description: "گوشی موبایل سامسونگ مدل Galaxy S23 Ultra با ظرفیت 256 گیگابایت و رم 12 گیگابایت",
-    price: "45900000",
-    discountPrice: "43500000",
-    category: "موبایل",
-    stock: "15",
-    features: [
-      "صفحه نمایش 6.8 اینچی",
-      "دوربین 200 مگاپیکسلی",
-      "باتری 5000 میلی‌آمپر ساعت",
-      "پردازنده Snapdragon 8 Gen 2",
-    ],
-    status: "published",
-  },
-  {
-    id: 2,
-    title: "لپ تاپ اپل مک‌بوک پرو M2",
-    description: "لپ تاپ 14 اینچی اپل مدل MacBook Pro با تراشه M2 Pro و حافظه 16 گیگابایت",
-    price: "85500000",
-    discountPrice: "",
-    category: "لپ تاپ",
-    stock: "8",
-    features: ["صفحه نمایش 14 اینچی Liquid Retina XDR", "تراشه M2 Pro", "حافظه 16 گیگابایت", "512 گیگابایت SSD"],
-    status: "published",
-  },
-  {
-    id: 3,
-    title: "هدفون بی سیم سونی WH-1000XM5",
-    description: "هدفون روگوشی بی‌سیم سونی با قابلیت حذف نویز و کیفیت صدای Hi-Res",
-    price: "12800000",
-    discountPrice: "11500000",
-    category: "صوتی",
-    stock: "20",
-    features: ["حذف نویز پیشرفته", "کیفیت صدای Hi-Res", "30 ساعت عمر باتری", "میکروفون با کیفیت برای تماس"],
-    status: "published",
-  },
-  {
-    id: 4,
-    title: "ساعت هوشمند اپل واچ سری ۸",
-    description: "ساعت هوشمند اپل واچ سری 8 با قابلیت‌های سلامتی پیشرفته و نمایشگر همیشه روشن",
-    price: "22500000",
-    discountPrice: "",
-    category: "پوشیدنی",
-    stock: "0",
-    features: ["نمایشگر همیشه روشن", "سنسور اکسیژن خون", "نوار قلب الکتریکی", "مقاوم در برابر آب تا عمق 50 متر"],
-    status: "published",
-  },
-  {
-    id: 5,
-    title: "تبلت سامسونگ گلکسی Tab S8",
-    description: "تبلت سامسونگ مدل Galaxy Tab S8 با صفحه نمایش 11 اینچی و قلم S Pen",
-    price: "18500000",
-    discountPrice: "17200000",
-    category: "تبلت",
-    stock: "5",
-    features: ["صفحه نمایش 11 اینچی", "پردازنده Snapdragon 8 Gen 1", "باتری 8000 میلی‌آمپر ساعت", "قلم S Pen همراه"],
-    status: "published",
-  },
-]
+import { updateProduct } from "@/lib/api/admin/product/updateProduct"
 
 export default function EditProductPage() {
   const params = useParams()
@@ -99,6 +36,15 @@ export default function EditProductPage() {
       router.push("/dashboard/products")
     }
   }, [productId, router])
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setProductData(prev => ({
+        ...prev,
+        image: file
+      }))
+    }
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -132,21 +78,41 @@ export default function EditProductPage() {
       features: newFeatures,
     }))
   }
+  console.log('Selected image:', image);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      const response = await updateProduct({
+        product_id: productId,
+        title: productData.title,
+        description: productData.description,
+        category_id: productData.category,
+        price: productData.price,
+        discount_price: productData.discountPrice || "",
+        inventory: productData.stock,
+        status: productData.status,
+        features: productData.features,
+        image:  null,
+      });
+console.log(image)
+      if (response.error) {
+        throw new Error(response.message || 'خطا در بروزرسانی محصول');
+      }
+
       setSuccess(true)
       setTimeout(() => {
         setSuccess(false)
-        // Redirect to products list after successful update
         router.push("/dashboard/products")
       }, 1500)
-    }, 1500)
+    } catch (error) {
+      console.error('Error updating product:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -335,8 +301,13 @@ export default function EditProductPage() {
                 <div className="flex flex-col items-center justify-center">
                   <Upload className="h-10 w-10 text-gray-400 mb-2" />
                   <p className="text-sm text-gray-500 mb-4">فایل تصویر را اینجا رها کنید یا کلیک کنید</p>
-                  <input type="file" className="hidden" id="product-image" />
-                  <label
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    id="product-image" 
+                    onChange={handleImageChange}
+                    accept="image/*"
+                  />                  <label
                     htmlFor="product-image"
                     className="bg-primary text-white px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-primary/90 transition-colors"
                   >
