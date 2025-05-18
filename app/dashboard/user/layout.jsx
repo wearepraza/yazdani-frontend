@@ -52,11 +52,6 @@ export default function UserDashboardLayout({ children }) {
       href: "/dashboard/user/orders",
       icon: Package,
     },
-    // {
-    //   title: "تراکنش‌ها",
-    //   href: "/dashboard/user/transactions",
-    //   icon: CreditCard,
-    // },
     {
       title: "علاقه‌مندی‌ها",
       href: "/dashboard/user/favorites",
@@ -65,6 +60,11 @@ export default function UserDashboardLayout({ children }) {
     {
       title: "باشگاه مشتریان",
       href: "/dashboard/user/club",
+      icon: Award,
+    },
+        {
+      title: "کوییز روزانه",
+      href: "/dashboard/user/quiz",
       icon: Award,
     },
     {
