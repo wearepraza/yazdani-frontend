@@ -123,12 +123,12 @@ console.log(response)
           const token = response.data.token
           if (token) {
               Cookies.set("authToken", token, { expires: 30 })
-              if(response.data.user.is_admin === 1) {
-                Cookies.set("dashboardPath", "/dashboard/admin", { expires: 30 });
+              Cookies.set("dashboardPath", "/dashboard/admin", { expires: 30 });
+              if(response.data.user.is_admin===1) {
                 window.location.href = "/dashboard/admin"
-              } else {
-                Cookies.set("dashboardPath", "/dashboard/user", { expires: 30 });
+              }else{
                 window.location.href = "/dashboard/user"
+
               }
           } else {
             setError("توکن دریافت نشد. لطفا دوباره تلاش کنید.")
@@ -148,37 +148,34 @@ console.log(response)
 
   const handleRegistrationSubmit = async (e) => {
     e.preventDefault()
-
-    // Validate all fields
+  
     const fnError = validateName(firstName)
     const lnError = validateName(lastName)
     const pwError = !password ? "رمز عبور الزامی است" : null
     const icError = !invitationCode ? "کد دعوت الزامی است" : null
-
+  
     setFirstNameError(fnError)
     setLastNameError(lnError)
     setPasswordError(pwError)
     setInvitationCodeError(icError)
-
+  
     if (fnError || lnError || pwError || icError) return
-
+  
     setLoading(true)
     setError(null)
-
+  
     try {
       const response = await register(phone, firstName, lastName, password, invitationCode)
-
-      if (response.error || !response.data || response.status !== 200) {
+  
+      if (response.error || !response.data || !(response.status >= 200 && response.status < 300)) {
         setError(response.message || "خطا در ثبت نام. لطفا دوباره تلاش کنید.")
         return
       }
-
-      // Only redirect if we have a successful response
-      if (response.data.success) {
+  
+      if (response.data.token) {
         const token = response.data.token
-        if (token) {
-          Cookies.set("authToken", token, { expires: 30 })
-        }
+        Cookies.set("authToken", token, { expires: 30 })
+        Cookies.set("dashboardPath", "/dashboard/user", { expires: 30 })
         window.location.href = "/dashboard/user"
       } else {
         setError(response.data.message || "خطا در ثبت نام. لطفا دوباره تلاش کنید.")
@@ -189,6 +186,7 @@ console.log(response)
       setLoading(false)
     }
   }
+  
 
   // Handle verification code input
   const handleVerificationCodeChange = (index, value) => {
@@ -473,8 +471,20 @@ console.log(response)
           <CardDescription className="text-center">{headerContent.description}</CardDescription>
         </CardHeader>
 
+        {/* Progress indicator - only show for registration */}
+        {isRegistering && (
+          <div className="px-6 mb-4">
+            <div className="w-full bg-muted h-1 rounded-full overflow-hidden">
+              <div
+                className="bg-primary h-full transition-all duration-300 ease-in-out"
+                style={{ width: `${(registrationStep / 2) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+
         {error && (
-          <div className="px-6 mb-4 mt-4">
+          <div className="px-6 mt-4">
             <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</p>
           </div>
         )}
