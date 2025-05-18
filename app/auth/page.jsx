@@ -21,6 +21,7 @@ import { iranStatesAndCities } from "@/lib/iran-states-cities"
 import { sendCode } from "@/lib/api/auth/sendCode"
 import { verifyCode } from "@/lib/api/auth/verifyCode"
 import { register } from "@/lib/api/auth/register"
+import { Playwrite_BE_VLG } from "next/font/google"
 
 export default function AuthPage() {
   // Main flow steps: 1 = phone, 2 = verification code
@@ -100,6 +101,9 @@ export default function AuthPage() {
   const handleVerificationSubmit = async (e) => {
     e.preventDefault()
 
+    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "dashboardPath=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
     const fullCode = getFullVerificationCode()
 
     const error = validateVerificationCode(fullCode)
@@ -111,20 +115,21 @@ export default function AuthPage() {
 
     try {
       const response = await verifyCode(phone, fullCode)
-
+console.log(response)
       if (response.status === 200 && response.data) {
         if (response.data.status === "new") {
           setIsRegistering(true)
         } else if (response.data.status === "existing") {
           const token = response.data.token
           if (token) {
-            Cookies.set("authToken", token, { expires: 30 })
-            if(response.data.user.is_admin) {
-              window.location.href = "/dashboard/admin"
-            }else{
-              window.location.href = "/dashboard/user"
-
-            }
+              Cookies.set("authToken", token, { expires: 30 })
+              if(response.data.user.is_admin === 1) {
+                Cookies.set("dashboardPath", "/dashboard/admin", { expires: 30 });
+                window.location.href = "/dashboard/admin"
+              } else {
+                Cookies.set("dashboardPath", "/dashboard/user", { expires: 30 });
+                window.location.href = "/dashboard/user"
+              }
           } else {
             setError("توکن دریافت نشد. لطفا دوباره تلاش کنید.")
           }

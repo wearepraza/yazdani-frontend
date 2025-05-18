@@ -83,7 +83,6 @@ export default function AdminLayout({ children }) {
   ]
 
   const handleLogout = () => {
-    // In a real app, you would handle logout logic here
     window.location.href = "/auth"
   }
 

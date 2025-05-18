@@ -93,6 +93,7 @@ export default function AdminDashboardLayout({ children }) {
   const handleLogout = () => {
     // Clear the auth token cookie
     document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "dashboardPath=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     // Redirect to auth page
     window.location.href = "/auth"
   }

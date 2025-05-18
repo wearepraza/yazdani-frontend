@@ -10,6 +10,8 @@ export default function UsersPage() {
   const [users, setUsers] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
 
   const filteredUsers = users.filter(
     (user) =>
@@ -17,6 +19,16 @@ export default function UsersPage() {
       (user.email?.includes(searchTerm)) ||
       user.phone.includes(searchTerm)
   )
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentUsers = filteredUsers.slice(startIndex, endIndex)
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage)
+  }
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -104,7 +116,7 @@ export default function UsersPage() {
               </thead>
               <tbody>
                 {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
+                  currentUsers.map((user) => (
                     <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
@@ -165,13 +177,26 @@ export default function UsersPage() {
       {!loading && (
         <div className="flex justify-between items-center mt-6">
           <div className="text-sm text-gray-500">
-            نمایش {filteredUsers.length} از {users.length} کاربر
+            نمایش {startIndex + 1} تا {Math.min(endIndex, filteredUsers.length)} از {filteredUsers.length} کاربر
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
               قبلی
             </Button>
-            <Button variant="outline" size="sm" disabled>
+            <span className="text-sm text-gray-600">
+              صفحه {currentPage} از {totalPages}
+            </span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
               بعدی
             </Button>
           </div>
