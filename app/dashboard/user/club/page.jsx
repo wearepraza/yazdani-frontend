@@ -13,8 +13,10 @@ import { redeemRewards } from "@/lib/api/user/club/rewards/redeemRewards"
 import { conversionsClub } from "@/lib/api/user/club/conversionsClub"
 import { withdrawRewards } from "@/lib/api/user/club/rewards/withdrawRewards"
 import { myCards } from "@/lib/api/user/cards/myCards"
+import ClubLoading from "./loading"
 
 export default function ClubPage() {
+  const [isLoading, setIsLoading] = useState(true)
   const [isUnlocked, setIsUnlocked] = useState(false)
   const [hasCards, setHasCards] = useState(false)
   const [overviewData, setOverviewData] = useState({
@@ -71,43 +73,59 @@ export default function ClubPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const cardsResponse = await myCards();
-        console.log(cardsResponse)
+        setIsLoading(true)
+        
+        const [
+          cardsResponse,
+          convertResponse,
+          overviewResponse,
+          statusRewardsResponse,
+          listRewardsResponse,
+          claimedRewardsResponse,
+          redeemRewardsResponse,
+          conversionsResponse
+        ] = await Promise.all([
+          myCards(),
+          convertClub(),
+          overviewClub(),
+          statusRewards(),
+          listRewards(),
+          claimedRewards(),
+          redeemRewards("1"),
+          conversionsClub()
+        ]);
+
+        // پردازش نتایج
         if (cardsResponse.data.my_cards && cardsResponse.data.my_cards.length > 0) {
           setHasCards(true);
           setIsUnlocked(true);
         }
-        const convertResponse = await convertClub();
-        console.log("Convert Club Response:", convertResponse);
 
-        const overviewResponse = await overviewClub();
-        console.log("Overview Club Response:", overviewResponse);
         setOverviewData(overviewResponse.data);
 
-        const statusRewardsResponse = await statusRewards();
+        // لاگ کردن نتایج
+        console.log("Cards Response:", cardsResponse);
+        console.log("Convert Club Response:", convertResponse);
+        console.log("Overview Club Response:", overviewResponse);
         console.log("Status Rewards Response:", statusRewardsResponse);
-
-        const listRewardsResponse = await listRewards();
         console.log("List Rewards Response:", listRewardsResponse);
-
-        const claimedRewardsResponse = await claimedRewards();
         console.log("Claimed Rewards Response:", claimedRewardsResponse);
-
-        const redeemRewardsResponse = await redeemRewards("1");
         console.log("Redeem Rewards Response:", redeemRewardsResponse);
-
-        const conversionsResponse = await conversionsClub();
         console.log("Conversions Club Response:", conversionsResponse);
-
-        // Fetch cards data
 
       } catch (error) {
         console.error("Error fetching club data:", error);
+      } finally {
+        setIsLoading(false)
       }
     };
 
     fetchData();
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []);
+
+  if (isLoading) {
+    return <ClubLoading />
+  }
 
   return (
     <div>

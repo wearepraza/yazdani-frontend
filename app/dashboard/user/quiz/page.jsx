@@ -4,22 +4,58 @@ import { useState, useEffect } from "react"
 import { CheckCircle, Clock, Award, HelpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-
-// Sample single daily question
-const dailyQuestion = {
-  id: 1,
-  question: "کدام یک از موارد زیر از مزایای خرید از فروشگاه فونیکسو است؟",
-  options: ["گارانتی اصالت کالا", "ارسال سریع", "پشتیبانی ۲۴ ساعته", "همه موارد"],
-  correctAnswer: 3,
-}
+import { todayQuiz } from "@/lib/api/user/quiz/todayQuiz"
+import { submitQuiz } from "@/lib/api/user/quiz/submitQuiz"
+import DailyQuizLoading from "./loading"
 
 export default function DailyQuizPage() {
   const [answer, setAnswer] = useState(null)
   const [submitted, setSubmitted] = useState(false)
   const [score, setScore] = useState(0)
-  const [timeLeft, setTimeLeft] = useState(300) // 5 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(300) 
   const [isActive, setIsActive] = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
+  const [quizData, setQuizData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [isAnswered, setIsAnswered] = useState(false)
+
+  useEffect(() => {
+    fetchQuizData()
+  }, [])
+
+  const fetchQuizData = async () => {
+    try {
+      setLoading(true)
+      const response = await todayQuiz()
+      console.log(response)
+      if (response.error) {
+        setError(response.message)
+      } else {
+        if (response.data.answered) {
+          setIsAnswered(true)
+          return
+        }
+      
+        const transformedData = {
+          id: response.data.quiz.id,
+          question: response.data.quiz.question,
+          options: [
+            response.data.quiz.option_a,
+            response.data.quiz.option_b,
+            response.data.quiz.option_c,
+            response.data.quiz.option_d
+          ],
+          correctAnswer: null 
+        }
+        setQuizData(transformedData)
+      }
+    } catch (err) {
+      setError("خطا در دریافت اطلاعات آزمون")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     let interval = null
@@ -41,17 +77,71 @@ export default function DailyQuizPage() {
     setAnswer(optionIndex)
   }
 
-  const handleSubmit = () => {
-    const isCorrect = answer === dailyQuestion.correctAnswer
-    setScore(isCorrect ? 10 : 0)
-    setSubmitted(true)
-    setIsActive(false)
+  const handleSubmit = async () => {
+    if (!quizData) return
+
+    try {
+      const optionMap = ['a', 'b', 'c', 'd']
+      const selectedOption = optionMap[answer]
+      const response = await submitQuiz(quizData.id, selectedOption)
+      
+      if (response.error) {
+        setError(response.message)
+        return
+      }
+
+      setScore(10)
+      setSubmitted(true)
+      setIsActive(false)
+    } catch (err) {
+      setError("خطا در ارسال پاسخ")
+    }
   }
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = seconds % 60
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`
+  }
+
+  if (loading) {
+    return <DailyQuizLoading />
+  }
+
+  if (error) {
+    return (
+      <div className="text-center max-w-md mx-auto p-6 bg-white rounded-xl shadow-sm border">
+        <p className="text-red-500">{error}</p>
+        <Button onClick={fetchQuizData} className="mt-4">
+          تلاش مجدد
+        </Button>
+      </div>
+    )
+  }
+
+  if (!quizData) {
+    return (
+      <div className="text-center max-w-md mx-auto p-6 bg-white rounded-xl shadow-sm border">
+        {isAnswered ? (
+          <>
+            <h1 className="text-2xl font-bold mb-2">آزمون روزانه</h1>
+            <p className="text-gray-500 mb-6">شما به سوال امروز پاسخ داده‌اید</p>
+
+            <div className="bg-blue-50 p-4 rounded-full w-fit mx-auto mb-4">
+              <CheckCircle className="h-12 w-12 text-blue-500" />
+            </div>
+
+            <Link href="/dashboard/user/club">
+              <Button className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg">
+                بازگشت به باشگاه مشتریان
+              </Button>
+            </Link>
+          </>
+        ) : (
+          <p className="text-gray-600">آزمونی برای امروز موجود نیست</p>
+        )}
+      </div>
+    )
   }
 
   if (!hasStarted) {
@@ -110,9 +200,9 @@ export default function DailyQuizPage() {
       </div>
 
       <div className="border rounded-lg p-5 shadow-sm mb-6">
-        <h3 className="font-medium text-lg mb-4">{dailyQuestion.question}</h3>
+        <h3 className="font-medium text-lg mb-4">{quizData.question}</h3>
         <div className="space-y-3">
-          {dailyQuestion.options.map((option, index) => (
+          {quizData.options.map((option, index) => (
             <label
               key={index}
               className={`flex items-center gap-2 p-3 rounded-lg cursor-pointer border ${
