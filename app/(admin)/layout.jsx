@@ -46,6 +46,11 @@ export default function AdminLayout({ children }) {
 
   const navItems = [
     {
+      title: "صفحه اصلی",
+      href: "/",
+      icon: Home,
+    },
+    {
       title: "داشبورد",
       href: "/dashboard",
       icon: Home,
