@@ -4,10 +4,12 @@ import { Logo } from "./logo"
 import { Search, ShoppingCart, User, Menu, ChevronDown } from "lucide-react"
 import { listCategory } from "@/lib/api/main/listCategory"
 import { useState, useEffect } from "react"
+import { getCartList } from "@/lib/api/user/cart/listCart"
 
 export function Navigation() {
   const [categories, setCategories] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [cartCount, setCartCount] = useState(0)
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -27,6 +29,21 @@ export function Navigation() {
       }
     }
     fetchCategories()
+  }, [])
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const response = await getCartList()
+        console.log('Cart response:', response) 
+        if (response.data?.cart) {
+          setCartCount(response?.data?.cart?.length) 
+        }
+      } catch (error) {
+        console.error('Error fetching cart:', error)
+      }
+    }
+    fetchCartCount()
   }, [])
 
   return (
@@ -89,6 +106,11 @@ export function Navigation() {
             <div className="flex items-center gap-2">
               <Link href="/cart" className="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
                 <ShoppingCart size={22} className="text-gray-700" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
               </Link>
               <Link href="/dashboard/user" className="p-2 rounded-full hover:bg-gray-100 transition-colors">
                 <User size={22} className="text-gray-700" />
