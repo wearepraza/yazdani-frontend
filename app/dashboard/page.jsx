@@ -1,3 +1,5 @@
-export default function DashboardRedirect() {
+import { redirect } from "next/navigation"
 
+export default function DashboardRedirect() {
+  redirect("/dashboard/admin")
 }
