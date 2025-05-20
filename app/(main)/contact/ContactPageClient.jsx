@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
-
+import { useState, useEffect } from "react"
+import { detailsPages } from "@/lib/api/admin/pages/detailsPages"
+import Loading from "./loading"
 export default function ContactPageClient() {
+  const [pageData, setPageData] = useState({})
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,7 +15,16 @@ export default function ContactPageClient() {
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [loading, setLoading] = useState(true)
 
+  useEffect(() => {
+    const fetchPageData = async () => {
+      const response = await detailsPages("contact")
+      setPageData(response.data)
+      setLoading(false)
+    }
+    fetchPageData()
+  }, [])
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -63,6 +74,9 @@ export default function ContactPageClient() {
     }, 1500)
   }
 
+  if (loading) {
+    return <Loading />
+  }
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-5xl mx-auto">
@@ -70,9 +84,9 @@ export default function ContactPageClient() {
         <div className="relative rounded-2xl overflow-hidden mb-16">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-90"></div>
           <div className="relative z-10 py-20 px-8 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">تماس با ما</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">{pageData?.title}</h1>
             <p className="text-xl text-white/90 max-w-3xl mx-auto">
-              ما همیشه آماده پاسخگویی به سوالات و پیشنهادات شما هستیم
+              {pageData?.description}
             </p>
           </div>
         </div>

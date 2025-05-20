@@ -4,65 +4,75 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react"
-
-// Sample cart data - in a real app, this would come from a context or state management
-const initialCartItems = [
-  {
-    id: 1,
-    name: "گوشی موبایل سامسونگ گلکسی S23 Ultra",
-    price: 45900000,
-    discountedPrice: 42500000,
-    image: "/samsung-galaxy-s23-ultra.png",
-    quantity: 1,
-    color: "مشکی",
-    warranty: "گارانتی 18 ماهه",
-  },
-  {
-    id: 2,
-    name: "هدفون بی سیم اپل ایرپادز پرو",
-    price: 12500000,
-    discountedPrice: 11800000,
-    image: "/airpods-pro-lifestyle.png",
-    quantity: 2,
-    color: "سفید",
-    warranty: "گارانتی 12 ماهه",
-  },
-]
+import { useDispatch, useSelector } from 'react-redux'
+import { addToCart, removeFromCart, setCart } from '@/lib/store/cartSlice'
+import { getCartList } from "@/lib/api/user/cart/listCart"
+import { addToCart as addToCartAPI } from "@/lib/api/user/cart/addToCart"
+import { removeCartItem } from "@/lib/api/user/cart/removeItemCart"
+import { STORAGE } from "@/lib/api/config"
 
 export default function CartPageClient() {
-  const [cartItems, setCartItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const dispatch = useDispatch()
+  const cartItems = useSelector((state) => state.cart.items)
+  const totalAmount = useSelector((state) => state.cart.totalAmount)
 
   useEffect(() => {
-    // Simulate loading cart items from API or localStorage
-    setTimeout(() => {
-      setCartItems(initialCartItems)
-      setLoading(false)
-    }, 500)
-  }, [])
+    const fetchCartItems = async () => {
+      try {
+        const response = await getCartList()
+        if (response.data?.cart) {
+          dispatch(setCart(response.data.cart))
+        }
+      } catch (error) {
+        console.error('Error fetching cart:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchCartItems()
+  }, [dispatch])
 
-  const updateQuantity = (id, newQuantity) => {
+  const updateQuantity = async (id, newQuantity) => {
     if (newQuantity < 1) return
 
-    setCartItems(cartItems.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
+    try {
+      const payload = {
+        product_id: id,
+        quantity: newQuantity
+      }
+      const response = await addToCartAPI(payload)
+      if (!response.error) {
+        dispatch(addToCart({
+          product_id: id,
+          quantity: newQuantity
+        }))
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error)
+    }
   }
 
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id))
-  }
-
-  const calculateSubtotal = () => {
-    return cartItems.reduce((total, item) => total + (item.discountedPrice || item.price) * item.quantity, 0)
+  const removeItem = async (id) => {
+    try {
+      const response = await removeCartItem({ product_id: id })
+      if (!response.error) {
+        dispatch(removeFromCart(id))
+      }
+    } catch (error) {
+      console.error('Error removing item:', error)
+    }
   }
 
   const calculateDiscount = () => {
     return cartItems.reduce((total, item) => {
-      const discount = item.discountedPrice ? (item.price - item.discountedPrice) * item.quantity : 0
+      const discount = item.product?.discount_price ? (item.product.price - item.product.discount_price) * item.quantity : 0
       return total + discount
     }, 0)
   }
 
   const formatPrice = (price) => {
+    if (!price && price !== 0) return "0 تومان"
     return price.toLocaleString("fa-IR") + " تومان"
   }
 
@@ -113,18 +123,19 @@ export default function CartPageClient() {
                 <div className="col-span-1 md:col-span-6">
                   <div className="flex items-center gap-4">
                     <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+                      <Image 
+                        src={`${STORAGE}${item.product?.image_path}` || "/placeholder.svg"} 
+                        alt={item.product?.title} 
+                        fill 
+                        className="object-cover" 
+                      />
                     </div>
                     <div>
                       <h3 className="font-medium text-sm md:text-base mb-1">
-                        <Link href={`/products/${item.id}`} className="hover:text-primary transition-colors">
-                          {item.name}
+                        <Link href={`/products/${item.product_id}`} className="hover:text-primary transition-colors">
+                          {item.product?.title}
                         </Link>
                       </h3>
-                      <div className="text-xs text-gray-500 space-y-1">
-                        <p>رنگ: {item.color}</p>
-                        <p>{item.warranty}</p>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -132,10 +143,14 @@ export default function CartPageClient() {
                 {/* Price */}
                 <div className="col-span-1 md:col-span-2 text-center">
                   <div className="flex flex-col items-center">
-                    {item.discountedPrice && (
-                      <span className="line-through text-gray-400 text-xs">{formatPrice(item.price)}</span>
+                    {item.product?.discount_price && (
+                      <span className="line-through text-gray-400 text-xs">
+                        {formatPrice(item.product.price)}
+                      </span>
                     )}
-                    <span className="font-medium text-sm">{formatPrice(item.discountedPrice || item.price)}</span>
+                    <span className="font-medium text-sm">
+                      {formatPrice(item.product?.discount_price || item.product?.price)}
+                    </span>
                   </div>
                 </div>
 
@@ -143,14 +158,14 @@ export default function CartPageClient() {
                 <div className="col-span-1 md:col-span-2 flex justify-center">
                   <div className="flex items-center border rounded-lg overflow-hidden">
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
                       className="p-2 hover:bg-gray-100 transition-colors"
                     >
                       <Plus size={16} />
                     </button>
                     <span className="w-10 text-center py-1">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
                       className="p-2 hover:bg-gray-100 transition-colors"
                       disabled={item.quantity <= 1}
                     >
@@ -164,10 +179,10 @@ export default function CartPageClient() {
                   <span className="md:hidden">قیمت کل:</span>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">
-                      {formatPrice((item.discountedPrice || item.price) * item.quantity)}
+                      {formatPrice((item.product?.discount_price || item.product?.price) * item.quantity)}
                     </span>
                     <button
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => removeItem(item.product_id)}
                       className="text-red-500 p-1 hover:bg-red-50 rounded-full transition-colors"
                       aria-label="حذف از سبد خرید"
                     >
@@ -189,7 +204,7 @@ export default function CartPageClient() {
           <div className="space-y-3 mb-6">
             <div className="flex justify-between">
               <span className="text-gray-600">قیمت کالاها ({cartItems.length})</span>
-              <span>{formatPrice(calculateSubtotal() + calculateDiscount())}</span>
+              <span>{formatPrice(totalAmount + calculateDiscount())}</span>
             </div>
 
             {calculateDiscount() > 0 && (
@@ -208,7 +223,7 @@ export default function CartPageClient() {
           <div className="border-t pt-4 mb-6">
             <div className="flex justify-between items-center">
               <span className="font-bold">مبلغ قابل پرداخت</span>
-              <span className="font-bold text-lg text-primary">{formatPrice(calculateSubtotal())}</span>
+              <span className="font-bold text-lg text-primary">{formatPrice(totalAmount)}</span>
             </div>
           </div>
 

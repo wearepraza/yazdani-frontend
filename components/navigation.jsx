@@ -5,18 +5,21 @@ import { Search, ShoppingCart, User, Menu, ChevronDown } from "lucide-react"
 import { listCategory } from "@/lib/api/main/listCategory"
 import { useState, useEffect } from "react"
 import { getCartList } from "@/lib/api/user/cart/listCart"
+import { useDispatch, useSelector } from 'react-redux'
+import { addToCart, removeFromCart } from '@/lib/store/cartSlice'
 
 export function Navigation() {
   const [categories, setCategories] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [cartCount, setCartCount] = useState(0)
+  const dispatch = useDispatch()
+  const cartItems = useSelector((state) => state.cart.items)
+  const cartCount = cartItems.length
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await listCategory()
         if (response.data?.categories) {
-          // Filter only parent categories (where parent_id is null or 0)
           const parentCategories = response.data.categories.filter(
             category => !category.parent_id || category.parent_id === 0
           )
@@ -35,16 +38,18 @@ export function Navigation() {
     const fetchCartCount = async () => {
       try {
         const response = await getCartList()
-        console.log('Cart response:', response) 
         if (response.data?.cart) {
-          setCartCount(response?.data?.cart?.length) 
+          // Update Redux store with cart items
+          response.data.cart.forEach(item => {
+            dispatch(addToCart(item))
+          })
         }
       } catch (error) {
         console.error('Error fetching cart:', error)
       }
     }
     fetchCartCount()
-  }, [])
+  }, [dispatch])
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-30">

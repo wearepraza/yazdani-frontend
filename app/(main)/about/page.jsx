@@ -1,9 +1,28 @@
-export const metadata = {
-  title: "درباره ما | فونیکسو",
-  description: "درباره فروشگاه فونیکسو و تاریخچه ما",
-}
+"use client"
+import { useState, useEffect } from "react"
+import { detailsPages } from "@/lib/api/admin/pages/detailsPages"
+import Loading from "./loading"
+// export const metadata = {
+//   title: "درباره ما | فونیکسو",
+//   description: "درباره فروشگاه فونیکسو و تاریخچه ما",
+// }
 
 export default function AboutPage() {
+  const [pageData, setPageData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    const fetchPageData = async () => {
+      const response = await detailsPages("about")
+      setPageData(response.data)
+      setLoading(false)
+    }
+    fetchPageData()
+  }, [])
+
+  if (loading) {
+    return <Loading />
+  }
+  
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-5xl mx-auto">
@@ -11,10 +30,9 @@ export default function AboutPage() {
         <div className="relative rounded-2xl overflow-hidden mb-16">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-90"></div>
           <div className="relative z-10 py-20 px-8 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">درباره فونیکسو</h1>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto">
-              فروشگاه آنلاین محصولات دیجیتال با بیش از ۷ سال تجربه در ارائه بهترین محصولات و خدمات
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">{pageData?.title}</h1>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto">{pageData?.description}</p>
+             
           </div>
         </div>
 

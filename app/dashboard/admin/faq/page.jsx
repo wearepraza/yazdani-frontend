@@ -1,6 +1,62 @@
+"use client"
 import Link from "next/link"
-
+import { useState, useEffect } from "react"
+import { updatePages } from "@/lib/api/admin/pages/updatePages"
+import { detailsPages } from "@/lib/api/admin/pages/detailsPages"
 export default function AdminFAQPage() {
+  const [pageData, setPageData] = useState({
+    title: "",
+    description: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  useEffect(() => {
+     const fetchPageData = async () => {
+    try {
+      const response = await detailsPages("faq");
+      if (response.data) {
+        setPageData({
+          title: response.data.title || "",
+          description: response.data.description || ""
+        });
+      }
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: "خطا در دریافت اطلاعات صفحه"
+      });
+    }
+  };
+    fetchPageData();
+  }, []);
+
+ 
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const response = await updatePages("faq", pageData.title, pageData.description);
+      if (response.data) {
+        setMessage({
+          type: "success",
+          text: "تغییرات با موفقیت ذخیره شد"
+        });
+      } else {
+        setMessage({
+          type: "error",
+          text: "خطا در ذخیره تغییرات"
+        });
+      }
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: "خطا در ذخیره تغییرات"
+      });
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -14,6 +70,12 @@ export default function AdminFAQPage() {
         </Link>
       </div>
 
+      {message.text && (
+        <div className={`mb-4 p-4 rounded-lg ${message.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+          {message.text}
+        </div>
+      )}
+
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 className="text-xl font-bold mb-4">اطلاعات اصلی</h2>
         <div className="space-y-4">
@@ -21,7 +83,8 @@ export default function AdminFAQPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">عنوان صفحه</label>
             <input
               type="text"
-              defaultValue="سوالات متداول"
+              value={pageData.title}
+              onChange={(e) => setPageData({ ...pageData, title: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -29,7 +92,8 @@ export default function AdminFAQPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">توضیحات کوتاه</label>
             <input
               type="text"
-              defaultValue="پاسخ به سوالات رایج شما درباره فروشگاه فونیکسو"
+              value={pageData.description}
+              onChange={(e) => setPageData({ ...pageData, description: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -164,8 +228,12 @@ export default function AdminFAQPage() {
       </div>
 
       <div className="flex justify-end">
-        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-          ذخیره تغییرات
+        <button 
+          onClick={handleSubmit}
+          disabled={loading}
+          className={`px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {loading ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
         </button>
       </div>
     </div>

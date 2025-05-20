@@ -4,9 +4,11 @@ import Link from "next/link"
 import { Heart, ShoppingCart, Star, Loader2, Check, Minus } from "lucide-react"
 import { STORAGE } from "@/lib/api/config"
 import { toggleFavoriteUser } from "@/lib/api/user/favorites/toggleFavoriteUser"
-import { addToCart } from "@/lib/api/user/cart/addToCart"
+import { addToCart as addToCartAPI } from "@/lib/api/user/cart/addToCart"
 import { removeCartItem } from "@/lib/api/user/cart/removeItemCart"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useDispatch, useSelector } from 'react-redux'
+import { addToCart, removeFromCart } from '@/lib/store/cartSlice'
 
 export default function EnhancedProductCard({ product, showActions = true }) {
   const { id, title, price, discountedPrice, discount, image, isNew, rating, category } = product
@@ -14,7 +16,10 @@ export default function EnhancedProductCard({ product, showActions = true }) {
   const [isLoading, setIsLoading] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
-  const [isInCart, setIsInCart] = useState(false)
+  
+  const dispatch = useDispatch()
+  const cartItems = useSelector((state) => state.cart.items)
+  const isInCart = cartItems.some(item => item.id === id)
 
   const hasDiscount = discount > 0
 
@@ -46,7 +51,7 @@ export default function EnhancedProductCard({ product, showActions = true }) {
         // Remove from cart
         const response = await removeCartItem({ product_id: id })
         if (!response.error) {
-          setIsInCart(false)
+          dispatch(removeFromCart(id))
         } else {
           console.error("Error removing from cart:", response.message)
         }
@@ -56,10 +61,16 @@ export default function EnhancedProductCard({ product, showActions = true }) {
           product_id: id,
           quantity: 1
         }
-        const response = await addToCart(payload)
+        const response = await addToCartAPI(payload)
         if (!response.error) {
+          dispatch(addToCart({
+            id,
+            title,
+            price: discountedPrice || price,
+            image,
+            quantity: 1
+          }))
           setIsAddedToCart(true)
-          setIsInCart(true)
           // Reset success state after 2 seconds
           setTimeout(() => {
             setIsAddedToCart(false)
