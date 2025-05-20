@@ -3,17 +3,47 @@ import Link from "next/link"
 import { Logo } from "./logo"
 import { Search, ShoppingCart, User, Menu, ChevronDown } from "lucide-react"
 import { listCategory } from "@/lib/api/main/listCategory"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { getCartList } from "@/lib/api/user/cart/listCart"
 import { useDispatch, useSelector } from 'react-redux'
 import { addToCart, removeFromCart } from '@/lib/store/cartSlice'
+import { searchProducts } from "@/lib/api/main/searchProducts"
 
 export function Navigation() {
   const [categories, setCategories] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isSearching, setIsSearching] = useState(false)
   const dispatch = useDispatch()
   const cartItems = useSelector((state) => state.cart.items)
   const cartCount = cartItems.length
+
+  const debouncedSearch = useCallback(async (query) => {
+    if (query.trim()) {
+      setIsSearching(true)
+      try {
+        const response = await searchProducts(query, 10)
+        if (response.data) {
+          console.log('Search results:', response.data)
+          window.location.href = `/search?q=${encodeURIComponent(query)}`
+        }
+      } catch (error) {
+        console.error('Error searching products:', error)
+      } finally {
+        setIsSearching(false)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) {
+        debouncedSearch(searchQuery)
+      }
+    }, 500) // 500ms delay
+
+    return () => clearTimeout(timer)
+  }, [searchQuery, debouncedSearch])
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -99,12 +129,22 @@ export function Navigation() {
           <div className="flex items-center gap-4">
             {/* Search */}
             <div className="relative hidden md:block">
-              <input
-                type="text"
-                placeholder="جستجو در محصولات..."
-                className="w-64 bg-gray-50 border border-gray-200 rounded-lg py-2 pr-10 pl-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-              />
-              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="جستجو در محصولات..."
+                  className="w-64 bg-gray-50 border border-gray-200 rounded-lg py-2 pr-10 pl-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <div className="absolute right-3 top-2.5">
+                  {isSearching ? (
+                    <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
+                  ) : (
+                    <Search className="h-5 w-5 text-gray-400" />
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Icons */}
