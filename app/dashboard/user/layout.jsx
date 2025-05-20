@@ -70,7 +70,9 @@ export default function UserDashboardLayout({ children }) {
     {
       title: "کارت‌های اعتباری",
       icon: CreditCard,
-      href: "/dashboard/user/credit-cards",
+      href: "#",
+      disabled: true,
+      badge: "به زودی",
     },
     {
       title: "تنظیمات",
@@ -202,8 +204,11 @@ export default function UserDashboardLayout({ children }) {
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                         pathname === item.href
                           ? "bg-primary text-white shadow-md shadow-primary/20"
+                          : item.disabled
+                          ? "opacity-50 cursor-default bg-gray-50 hover:bg-gray-100"
                           : "hover:bg-gray-50 text-gray-700"
                       }`}
+                      onClick={(e) => item.disabled && e.preventDefault()}
                     >
                       <item.icon size={18} className={pathname === item.href ? "text-white" : "text-gray-500"} />
                       <span className="font-medium">{item.title}</span>
@@ -264,8 +269,11 @@ export default function UserDashboardLayout({ children }) {
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                         pathname === item.href
                           ? "bg-primary text-white shadow-md shadow-primary/20"
+                          : item.disabled
+                          ? "opacity-50 cursor-default bg-gray-50 hover:bg-gray-100"
                           : "hover:bg-gray-50 text-gray-700"
                       }`}
+                      onClick={(e) => item.disabled && e.preventDefault()}
                     >
                       <item.icon size={18} className={pathname === item.href ? "text-white" : "text-gray-500"} />
                       <span className="font-medium">{item.title}</span>

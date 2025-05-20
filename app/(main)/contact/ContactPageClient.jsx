@@ -165,6 +165,8 @@ export default function ContactPageClient() {
           </div>
         </div>
 
+  
+
         {/* Working Hours */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-12">
           <h2 className="text-2xl font-bold text-center mb-6">ساعات کاری</h2>
@@ -203,7 +205,7 @@ export default function ContactPageClient() {
         </div>
 
         {/* Contact Form */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-12">
           <h2 className="text-2xl font-bold text-center mb-8">فرم تماس با ما</h2>
 
           {submitSuccess ? (
@@ -355,6 +357,22 @@ export default function ContactPageClient() {
               </div>
             </form>
           )}
+        </div>
+
+              {/* Map Section */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 ">
+          <h2 className="text-2xl font-bold text-center mb-6">موقعیت ما</h2>
+          <div className="w-full h-[400px] rounded-xl overflow-hidden">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3237.1234567890123!2d51.3890!3d35.6892!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDQxJzIxLjEiTiA1McKwMjMnMjAuNCJF!5e0!3m2!1sen!2sir!4v1234567890"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
         </div>
       </div>
     </div>

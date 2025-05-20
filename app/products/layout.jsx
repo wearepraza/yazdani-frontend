@@ -2,6 +2,8 @@ import Link from "next/link"
 import { Search, ShoppingCart, User, Heart, Menu, ChevronDown, Phone, Mail, MapPin } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Suspense } from "react"
+import { Footer } from "@/components/footer"
+import { Navigation } from "@/components/navigation"
 
 export default function ProductsLayout({ children }) {
   return (
@@ -30,11 +32,13 @@ export default function ProductsLayout({ children }) {
           </div>
         </div>
       </div>
+      <Navigation/>
 
       {/* Main Content */}
       <main className="flex-1">
         <Suspense>{children}</Suspense>
       </main>
+      <Footer/>
     </div>
   )
 }

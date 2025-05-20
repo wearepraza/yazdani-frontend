@@ -153,7 +153,7 @@ export default function ClubPage() {
           <div className="flex-1">
             <div className="flex justify-between mb-2">
               <span className="text-sm text-gray-500">تعداد ستاره‌های کسب شده</span>
-              <span className="font-bold">{overviewData.stars} از ۱۰</span>
+              <span className="font-bold">{overviewData.stars} </span>
             </div>
             <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
               <div className="h-full bg-amber-500 rounded-full" style={{ width: `${(overviewData.stars / 10) * 100}%` }}></div>
@@ -202,7 +202,7 @@ export default function ClubPage() {
             <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
               <div className="h-full bg-yellow-500 rounded-full" style={{ width: `${(overviewData.coins / 10000) * 100}%` }}></div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">از ۵ سطح دعوت‌های شما</p>
+            {/* <p className="text-xs text-gray-500 mt-2">از ۵ سطح دعوت‌های شما</p> */}
           </div>
 
           <div>
@@ -218,9 +218,35 @@ export default function ClubPage() {
         </div>
       </div>
 
+        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-green-50 p-2 rounded-full">
+              <Trophy className="h-5 w-5 text-green-500" />
+            </div>
+            <h2 className="text-lg font-bold">امتیازات شما</h2>
+            <div className="relative group">
+              <Info className="h-4 w-4 text-gray-400 cursor-help" />
+              <div className="absolute bottom-full right-0 mb-2 w-64 p-2 bg-gray-800 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                ۰.۰۰۱٪ از هر خرید کارت انجام شده توسط شبکه ۵ سطحی خود را دریافت کنید.
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex justify-between mb-2">
+              <span className="text-sm text-gray-500">امتیازات کسب شده</span>
+              <span className="font-bold">{overviewData.points} از {overviewData.points_to_next}</span>
+            </div>
+            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full bg-green-500 rounded-full" style={{ width: `${(overviewData.points / overviewData.points_to_next) * 100}%` }}></div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">سطح فعلی: {overviewData.level} - سطح بعدی: {overviewData.next_level}</p>
+          </div>
+        </div>
       {/* Locked Sections Container */}
+      
       <div className="relative mb-6">
-        {!isUnlocked && !hasCards && (
+        {isUnlocked && hasCards && (
           <div className="absolute inset-0 bg-gradient-to-br from-gray-100/90 to-gray-200/90 backdrop-blur-[2px] flex items-center justify-center rounded-xl z-20">
             <div className="bg-white p-6 rounded-xl shadow-md text-center max-w-md mx-4">
               <div className="bg-blue-50 p-3 rounded-full mx-auto w-fit mb-4">
@@ -255,31 +281,7 @@ export default function ClubPage() {
         )}
 
         {/* Points Section */}
-        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="bg-green-50 p-2 rounded-full">
-              <Trophy className="h-5 w-5 text-green-500" />
-            </div>
-            <h2 className="text-lg font-bold">امتیازات شما</h2>
-            <div className="relative group">
-              <Info className="h-4 w-4 text-gray-400 cursor-help" />
-              <div className="absolute bottom-full right-0 mb-2 w-64 p-2 bg-gray-800 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                ۰.۰۰۱٪ از هر خرید کارت انجام شده توسط شبکه ۵ سطحی خود را دریافت کنید.
-              </div>
-            </div>
-          </div>
 
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-sm text-gray-500">امتیازات کسب شده</span>
-              <span className="font-bold">{overviewData.points} از {overviewData.points_to_next}</span>
-            </div>
-            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-green-500 rounded-full" style={{ width: `${(overviewData.points / overviewData.points_to_next) * 100}%` }}></div>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">سطح فعلی: {overviewData.level} - سطح بعدی: {overviewData.next_level}</p>
-          </div>
-        </div>
 
         {/* Convert Section */}
         <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm mb-6">
