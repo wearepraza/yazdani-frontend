@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   User,
   Package,
@@ -17,35 +17,40 @@ import {
   BarChart,
   PlusCircle,
   CreditCard,
-} from "lucide-react"
-import { useUserContext } from "@/context/user-context/UserContext"
+} from "lucide-react";
+import { useUserContext } from "@/context/user-context/UserContext";
 
 export default function AdminDashboardLayout({ children }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const pathname = usePathname()
-  const { userData, isLoading } = useUserContext()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const pathname = usePathname();
+  const { userData, isLoading } = useUserContext();
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleClickOutside = (event) => {
-      const sidebar = document.getElementById("admin-sidebar")
-      const menuButton = document.getElementById("admin-menu-button")
+      const sidebar = document.getElementById("admin-sidebar");
+      const menuButton = document.getElementById("admin-menu-button");
 
-      if (sidebar && !sidebar.contains(event.target) && menuButton && !menuButton.contains(event.target)) {
-        setIsSidebarOpen(false)
+      if (
+        sidebar &&
+        !sidebar.contains(event.target) &&
+        menuButton &&
+        !menuButton.contains(event.target)
+      ) {
+        setIsSidebarOpen(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Close sidebar when route changes on mobile
   useEffect(() => {
-    setIsSidebarOpen(false)
-  }, [pathname])
+    setIsSidebarOpen(false);
+  }, [pathname]);
 
   const navItems = [
     {
@@ -88,22 +93,24 @@ export default function AdminDashboardLayout({ children }) {
       href: "/dashboard/admin/settings",
       icon: Settings,
     },
-  ]
+  ];
 
   const handleLogout = () => {
     // Clear the auth token cookie
-    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = "dashboardPath=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie =
+      "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie =
+      "dashboardPath=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     // Redirect to auth page
-    window.location.href = "/auth"
-  }
+    window.location.href = "/auth";
+  };
 
   const UserInfoSkeleton = () => (
     <div className="animate-pulse">
       <div className="h-4 w-24 bg-gray-200 rounded mb-1"></div>
       <div className="h-3 w-32 bg-gray-200 rounded"></div>
     </div>
-  )
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -135,8 +142,12 @@ export default function AdminDashboardLayout({ children }) {
                   <UserInfoSkeleton />
                 ) : (
                   <>
-                    <span className="text-sm font-medium">{userData?.name || 'مدیر سیستم'}</span>
-                    <span className="text-xs text-gray-500">{userData?.mobile_number || 'شماره موبایل'}</span>
+                    <span className="text-sm font-medium">
+                      {userData?.name || "مدیر سیستم"}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {userData?.mobile_number || "شماره موبایل"}
+                    </span>
                   </>
                 )}
               </div>
@@ -148,14 +159,23 @@ export default function AdminDashboardLayout({ children }) {
 
             <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
               <div className="py-2">
-                <Link href="/dashboard/admin/profile" className="block px-4 py-2 text-sm hover:bg-gray-50">
+                <Link
+                  href="/dashboard/admin/profile"
+                  className="block px-4 py-2 text-sm hover:bg-gray-50"
+                >
                   پروفایل مدیر
                 </Link>
-                <Link href="/dashboard/admin/settings" className="block px-4 py-2 text-sm hover:bg-gray-50">
+                <Link
+                  href="/dashboard/admin/settings"
+                  className="block px-4 py-2 text-sm hover:bg-gray-50"
+                >
                   تنظیمات
                 </Link>
                 <hr className="my-1 border-gray-100" />
-                <Link href="/dashboard/user" className="block px-4 py-2 text-sm hover:bg-gray-50">
+                <Link
+                  href="/dashboard/user"
+                  className="block px-4 py-2 text-sm hover:bg-gray-50"
+                >
                   پنل کاربری
                 </Link>
                 <hr className="my-1 border-gray-100" />
@@ -197,8 +217,12 @@ export default function AdminDashboardLayout({ children }) {
                     <UserInfoSkeleton />
                   ) : (
                     <>
-                      <p className="font-bold text-lg">{userData?.name || 'مدیر سیستم'}</p>
-                      <p className="text-sm text-gray-500">{userData?.mobile_number || 'شماره موبایل'}</p>
+                      <p className="font-bold text-lg">
+                        {userData?.name || "مدیر سیستم"}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {userData?.mobile_number || "شماره موبایل"}
+                      </p>
                     </>
                   )}
                 </div>
@@ -217,12 +241,21 @@ export default function AdminDashboardLayout({ children }) {
                           : "hover:bg-gray-50 text-gray-700"
                       }`}
                     >
-                      <item.icon size={18} className={pathname === item.href ? "text-white" : "text-gray-500"} />
+                      <item.icon
+                        size={18}
+                        className={
+                          pathname === item.href
+                            ? "text-white"
+                            : "text-gray-500"
+                        }
+                      />
                       <span className="font-medium">{item.title}</span>
                       {item.badge && (
                         <span
                           className={`mr-auto px-2 py-0.5 rounded-full text-xs ${
-                            pathname === item.href ? "bg-white text-primary" : "bg-primary/10 text-primary"
+                            pathname === item.href
+                              ? "bg-white text-primary"
+                              : "bg-primary/10 text-primary"
                           }`}
                         >
                           {item.badge}
@@ -326,8 +359,12 @@ export default function AdminDashboardLayout({ children }) {
                     <UserInfoSkeleton />
                   ) : (
                     <>
-                      <p className="font-bold text-lg">{userData?.name || 'مدیر سیستم'}</p>
-                      <p className="text-sm text-gray-500">{userData?.mobile_number || 'شماره موبایل'}</p>
+                      <p className="font-bold text-lg">
+                        {userData?.name || "مدیر سیستم"}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {userData?.mobile_number || "شماره موبایل"}
+                      </p>
                     </>
                   )}
                 </div>
@@ -346,12 +383,21 @@ export default function AdminDashboardLayout({ children }) {
                           : "hover:bg-gray-50 text-gray-700"
                       }`}
                     >
-                      <item.icon size={18} className={pathname === item.href ? "text-white" : "text-gray-500"} />
+                      <item.icon
+                        size={18}
+                        className={
+                          pathname === item.href
+                            ? "text-white"
+                            : "text-gray-500"
+                        }
+                      />
                       <span className="font-medium">{item.title}</span>
                       {item.badge && (
                         <span
                           className={`mr-auto px-2 py-0.5 rounded-full text-xs ${
-                            pathname === item.href ? "bg-white text-primary" : "bg-primary/10 text-primary"
+                            pathname === item.href
+                              ? "bg-white text-primary"
+                              : "bg-primary/10 text-primary"
                           }`}
                         >
                           {item.badge}
@@ -427,6 +473,28 @@ export default function AdminDashboardLayout({ children }) {
                     مدیریت سوالات متداول
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    href="/dashboard/admin/terms"
+                    className="flex items-center p-2 text-gray-600 rounded-lg hover:bg-gray-100"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-5 h-5 ml-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 17h18M3 12h18M6 7h12"
+                      />
+                    </svg>
+                    مدیریت قوانین و مقررات
+                  </Link>
+                </li>
               </ul>
             </nav>
 
@@ -444,9 +512,11 @@ export default function AdminDashboardLayout({ children }) {
 
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 md:p-6">{children}</div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 md:p-6">
+            {children}
+          </div>
         </main>
       </div>
     </div>
-  )
+  );
 }

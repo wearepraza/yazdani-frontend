@@ -44,6 +44,9 @@ export default function MainLayout({ children }) {
         case 'contact':
           label = 'تماس با ما'
           break
+        case 'terms':
+          label = 'قوانین و مقررات'
+          break
         default:
           label = path
             .split('-')
