@@ -50,11 +50,14 @@ export default function AuthPage() {
 
         {/* Bottom Switch */}
         <CardFooter className="flex justify-center gap-4 text-sm pt-0">
-          {mode !== "login" && (
-            <Button variant="link" onClick={() => handleModeChange("login")}>ورود با رمز</Button>
+          {mode === "register" && (
+            <Button variant="link" onClick={() => handleModeChange("login")}>قبلا ثبت نام کرده اید؟</Button>
           )}
-          {mode !== "otp" && (
-            <Button variant="link" onClick={() => handleModeChange("otp")}>رمز را فراموش کرده‌اید؟</Button>
+          {mode !== "login" && mode !== "register" && (
+            <Button variant="link" onClick={() => handleModeChange("login")}>ورود با رمز عبور</Button>
+          )}
+          {mode !== "otp" && mode !== "register" && (
+            <Button variant="link" onClick={() => handleModeChange("otp")}>رمز عبور را فراموش کرده‌اید؟</Button>
           )}
           {mode !== "register" && (
             <Button variant="link" onClick={() => handleModeChange("register")}>ثبت‌نام</Button>

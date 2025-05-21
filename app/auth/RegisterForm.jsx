@@ -15,7 +15,7 @@ import {
 } from "@/lib/validation"
 
 export default function RegisterForm({ setError }) {
-  const [step, setStep] = useState(1) // 1: phone, 2: code, 3: form
+  const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
 
   const [phone, setPhone] = useState("")
@@ -24,6 +24,7 @@ export default function RegisterForm({ setError }) {
   const [lastName, setLastName] = useState("")
   const [password, setPassword] = useState("")
   const [invitationCode, setInvitationCode] = useState("")
+  const [acceptedRules, setAcceptedRules] = useState(false)
 
   const [phoneError, setPhoneError] = useState(null)
   const [codeError, setCodeError] = useState(null)
@@ -31,12 +32,12 @@ export default function RegisterForm({ setError }) {
   const [lastNameError, setLastNameError] = useState(null)
   const [passwordError, setPasswordError] = useState(null)
   const [invitationCodeError, setInvitationCodeError] = useState(null)
+  const [rulesError, setRulesError] = useState(null)
 
   const inputRefs = useRef([])
 
   const getCode = () => verificationCode.join("")
 
-  // Step 1: send code
   const handleSendCode = async (e) => {
     e.preventDefault()
 
@@ -61,7 +62,6 @@ export default function RegisterForm({ setError }) {
     }
   }
 
-  // Step 2: verify code
   const handleVerifyCode = async (e) => {
     e.preventDefault()
 
@@ -87,7 +87,6 @@ export default function RegisterForm({ setError }) {
     }
   }
 
-  // Step 3: register
   const handleRegister = async (e) => {
     e.preventDefault()
 
@@ -95,13 +94,15 @@ export default function RegisterForm({ setError }) {
     const lnError = validateName(lastName)
     const pwError = !password ? "رمز عبور الزامی است." : null
     const icError = !invitationCode ? "کد دعوت الزامی است." : null
+    const rulesOk = acceptedRules
 
     setFirstNameError(fnError)
     setLastNameError(lnError)
     setPasswordError(pwError)
     setInvitationCodeError(icError)
+    setRulesError(rulesOk ? null : "لطفاً قوانین را بپذیرید.")
 
-    if (fnError || lnError || pwError || icError) return
+    if (fnError || lnError || pwError || icError || !rulesOk) return
 
     setLoading(true)
     setError(null)
@@ -150,12 +151,14 @@ export default function RegisterForm({ setError }) {
   }
 
   return (
-    <form onSubmit={
-      step === 1 ? handleSendCode :
-      step === 2 ? handleVerifyCode :
-      handleRegister
-    } className="px-6 space-y-4 pb-6">
-
+    <form
+      onSubmit={
+        step === 1 ? handleSendCode :
+        step === 2 ? handleVerifyCode :
+        handleRegister
+      }
+      className="px-6 space-y-4 pb-6"
+    >
       {/* Step 1: Phone */}
       {step === 1 && (
         <div className="space-y-2">
@@ -257,6 +260,28 @@ export default function RegisterForm({ setError }) {
             />
             {invitationCodeError && <p className="text-sm text-destructive">{invitationCodeError}</p>}
           </div>
+
+          {/* Checkbox for rules */}
+          <div className="flex items-center gap-2 mt-2">
+            <input
+              type="checkbox"
+              id="acceptRules"
+              checked={acceptedRules}
+              onChange={(e) => {
+                setAcceptedRules(e.target.checked)
+                setRulesError(null)
+              }}
+              className="w-4 h-4"
+            />
+            <label htmlFor="acceptRules" className="text-sm">
+              با{" "}
+              <a href="/rules" target="_blank" className="text-blue-600 underline">
+                قوانین و مقررات
+              </a>{" "}
+              موافقم
+            </label>
+          </div>
+          {rulesError && <p className="text-sm text-destructive mt-1">{rulesError}</p>}
 
           <Button type="submit" className="w-full mt-4" disabled={loading}>
             {loading ? "در حال ثبت‌نام..." : (
