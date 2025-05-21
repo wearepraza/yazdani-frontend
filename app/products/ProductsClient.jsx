@@ -137,7 +137,7 @@ export default function ProductsClient({ products, categories }) {
                 <option value="price-asc">ارزان‌ترین</option>
                 <option value="price-desc">گران‌ترین</option>
                 <option value="discount">بیشترین تخفیف</option>
-              </select>
+              </select> 
             </div>
           </div>
 
