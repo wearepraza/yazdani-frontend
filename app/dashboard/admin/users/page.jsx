@@ -11,14 +11,20 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const itemsPerPage = 10
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.fullName.includes(searchTerm) ||
-      (user.email?.includes(searchTerm)) ||
-      user.phone.includes(searchTerm)
-  )
+  const filteredUsers = users
+    .filter(
+      (user) =>
+        user.fullName.includes(searchTerm) ||
+        (user.email?.includes(searchTerm)) ||
+        user.phone.includes(searchTerm)
+    )
+    .sort((a, b) => {
+      const numA = parseInt(a.registration_number) || 0;
+      const numB = parseInt(b.registration_number) || 0;
+      return numA - numB;
+    });
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
@@ -38,6 +44,7 @@ export default function UsersPage() {
         const transformed = response.data.map((user) => ({
           id: user.id,
           fullName: `${user.name} ${user.surname}`.trim(),
+          registration_number: user.registration_number || "—",
           email: user.email || "—",
           phone: user.mobile_number || "—",
           registerDate: new Date(user.created_at).toLocaleDateString("fa-IR"),
@@ -106,6 +113,7 @@ export default function UsersPage() {
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
                   <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">کاربر</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">شماره عضویت</th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">ایمیل</th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">شماره موبایل</th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">تاریخ عضویت</th>
@@ -124,6 +132,12 @@ export default function UsersPage() {
                             <span className="text-primary font-bold">{user.fullName.charAt(0)}</span>
                           </div>
                           <span className="font-medium text-gray-900">{user.fullName}</span>
+                        </div>
+                      </td>
+                         <td className="px-4 py-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          {/* <Mail size={14} className="text-gray-400" /> */}
+                          <span>{user.registration_number}</span>
                         </div>
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600">

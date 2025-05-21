@@ -127,7 +127,7 @@ export default function EnhancedProductCard({ product, showActions = true }) {
                 : "/placeholder.svg?height=192&width=256&query=product"
             }
             alt={title}
-            className="h-full w-full object-contain bg-gray-50 transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-contain bg-gray-10 transition-transform duration-500 group-hover:scale-105"
           />
 
           {showActions && (
