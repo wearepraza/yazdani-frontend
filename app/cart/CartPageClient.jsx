@@ -33,33 +33,32 @@ export default function CartPageClient() {
     fetchCartItems()
   }, [dispatch])
 
-  const updateQuantity = async (id, newQuantity) => {
-    if (newQuantity < 1) return
+  const updateQuantity = async (id, newQuantity, product) => {
+    if (newQuantity < 0) return
+
+    if (newQuantity === 0) {
+      await removeItem(id, product)
+      return
+    }
+
+    dispatch(addToCart({ product_id: id, quantity: newQuantity, product }))
 
     try {
-      const payload = {
-        product_id: id,
-        quantity: newQuantity
-      }
-      const response = await addToCartAPI(payload)
-      if (!response.error) {
-        dispatch(addToCart({
-          product_id: id,
-          quantity: newQuantity
-        }))
-      }
+      const payload = { product_id: id, quantity: newQuantity }
+      await addToCartAPI(payload)
     } catch (error) {
       console.error('Error updating quantity:', error)
+      dispatch(addToCart({ product_id: id, quantity: newQuantity - 1, product }))
     }
   }
 
-  const removeItem = async (id) => {
+  const removeItem = async (id, product) => {
+    dispatch(removeFromCart(id))
+
     try {
-      const response = await removeCartItem({ product_id: id })
-      if (!response.error) {
-        dispatch(removeFromCart(id))
-      }
+      await removeCartItem({ product_id: id })
     } catch (error) {
+      dispatch(addToCart({ product_id: id, quantity: 1, product }))
       console.error('Error removing item:', error)
     }
   }
@@ -119,15 +118,14 @@ export default function CartPageClient() {
           {cartItems.map((item) => (
             <div key={item.id} className="border-b last:border-b-0 p-4">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                {/* Product Info */}
                 <div className="col-span-1 md:col-span-6">
                   <div className="flex items-center gap-4">
                     <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      <Image 
-                        src={`${STORAGE}${item.product?.image_path}` || "/placeholder.svg"} 
-                        alt={item.product?.title} 
-                        fill 
-                        className="object-cover" 
+                      <Image
+                        src={item.product?.image_path ? `${STORAGE}${item.product.image_path}` : "/placeholder.svg"}
+                        alt={item.product?.title}
+                        fill
+                        className="object-cover"
                       />
                     </div>
                     <div>
@@ -140,7 +138,6 @@ export default function CartPageClient() {
                   </div>
                 </div>
 
-                {/* Price */}
                 <div className="col-span-1 md:col-span-2 text-center">
                   <div className="flex flex-col items-center">
                     {item.product?.discount_price && (
@@ -154,27 +151,24 @@ export default function CartPageClient() {
                   </div>
                 </div>
 
-                {/* Quantity */}
                 <div className="col-span-1 md:col-span-2 flex justify-center">
-                  <div className="flex items-center border rounded-lg overflow-hidden">
+                  <div className="flex items-center gap-1">
                     <button
-                      onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
-                      className="p-2 hover:bg-gray-100 transition-colors"
-                    >
-                      <Plus size={16} />
-                    </button>
-                    <span className="w-10 text-center py-1">{item.quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
-                      className="p-2 hover:bg-gray-100 transition-colors"
-                      disabled={item.quantity <= 1}
+                      onClick={() => updateQuantity(item.product_id, item.quantity - 1, item.product)}
+                      className="p-2 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-white transition-colors"
                     >
                       <Minus size={16} />
+                    </button>
+                    <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
+                    <button
+                      onClick={() => updateQuantity(item.product_id, item.quantity + 1, item.product)}
+                      className="p-2 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-white transition-colors"
+                    >
+                      <Plus size={16} />
                     </button>
                   </div>
                 </div>
 
-                {/* Total Price */}
                 <div className="col-span-1 md:col-span-2 flex justify-between md:justify-center items-center">
                   <span className="md:hidden">قیمت کل:</span>
                   <div className="flex items-center gap-2">
@@ -182,7 +176,7 @@ export default function CartPageClient() {
                       {formatPrice((item.product?.discount_price || item.product?.price) * item.quantity)}
                     </span>
                     <button
-                      onClick={() => removeItem(item.product_id)}
+                      onClick={() => removeItem(item.product_id, item.product)}
                       className="text-red-500 p-1 hover:bg-red-50 rounded-full transition-colors"
                       aria-label="حذف از سبد خرید"
                     >
@@ -196,7 +190,6 @@ export default function CartPageClient() {
         </div>
       </div>
 
-      {/* Order Summary */}
       <div className="lg:col-span-1">
         <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
           <h2 className="text-lg font-bold mb-4 pb-4 border-b">خلاصه سفارش</h2>

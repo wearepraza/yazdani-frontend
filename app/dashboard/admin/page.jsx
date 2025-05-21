@@ -1,7 +1,46 @@
+"use client"
 import { Users, ShoppingBag, Package, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import Link from "next/link"
+import { overviewDashboard } from "@/lib/api/admin/dashboard/overviewDashboard"
+import { useEffect, useState } from "react"
 
 export default function AdminDashboardPage() {
+  const [dashboardData, setDashboardData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        console.log("Fetching dashboard data...")
+        const response = await overviewDashboard()
+        console.log("Dashboard API Response:", response)
+        
+        if (response.error) {
+          console.error("Dashboard API Error:", response.message)
+          setError(response.message)
+        } else {
+          setDashboardData(response.data)
+        }
+      } catch (err) {
+        console.error("Dashboard fetch error:", err)
+        setError("خطا در دریافت اطلاعات داشبورد")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDashboardData()
+  }, [])
+
+  if (loading) {
+    return <div className="text-center py-8">در حال بارگذاری...</div>
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-500">{error}</div>
+  }
+
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -10,7 +49,7 @@ export default function AdminDashboardPage() {
           <p className="text-gray-500 mt-1">خلاصه وضعیت فروشگاه و آمار کلیدی</p>
         </div>
         <div className="mt-4 md:mt-0">
-          <span className="text-sm text-gray-500">آخرین بروزرسانی: امروز ۱۴:۳۰</span>
+          <span className="text-sm text-gray-500">آخرین بروزرسانی: {new Date().toLocaleTimeString('fa-IR')}</span>
         </div>
       </div>
 
@@ -20,10 +59,10 @@ export default function AdminDashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-500 text-sm">فروش امروز</p>
-              <p className="text-2xl font-bold mt-1">۱۲,۵۰۰,۰۰۰ تومان</p>
+              <p className="text-2xl font-bold mt-1">{dashboardData?.todaySales?.toLocaleString('fa-IR')} تومان</p>
               <div className="flex items-center mt-2 text-green-600 text-sm">
                 <ArrowUpRight size={14} className="mr-1" />
-                <span>۱۵٪ افزایش</span>
+                <span>{dashboardData?.salesGrowth}٪ افزایش</span>
               </div>
             </div>
             <div className="bg-blue-50 p-2 rounded-lg">
@@ -36,10 +75,10 @@ export default function AdminDashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-500 text-sm">سفارش‌های جدید</p>
-              <p className="text-2xl font-bold mt-1">۲۴</p>
+              <p className="text-2xl font-bold mt-1">{dashboardData?.newOrders}</p>
               <div className="flex items-center mt-2 text-green-600 text-sm">
                 <ArrowUpRight size={14} className="mr-1" />
-                <span>۸٪ افزایش</span>
+                <span>{dashboardData?.ordersGrowth}٪ افزایش</span>
               </div>
             </div>
             <div className="bg-green-50 p-2 rounded-lg">
@@ -52,9 +91,9 @@ export default function AdminDashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-500 text-sm">محصولات</p>
-              <p className="text-2xl font-bold mt-1">۱۵۶</p>
+              <p className="text-2xl font-bold mt-1">{dashboardData?.totalProducts}</p>
               <div className="flex items-center mt-2 text-gray-500 text-sm">
-                <span>۱۲ محصول کم‌موجود</span>
+                <span>{dashboardData?.lowStockProducts} محصول کم‌موجود</span>
               </div>
             </div>
             <div className="bg-purple-50 p-2 rounded-lg">
@@ -67,10 +106,10 @@ export default function AdminDashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-500 text-sm">کاربران جدید</p>
-              <p className="text-2xl font-bold mt-1">۱۸</p>
+              <p className="text-2xl font-bold mt-1">{dashboardData?.newUsers}</p>
               <div className="flex items-center mt-2 text-red-600 text-sm">
                 <ArrowDownRight size={14} className="mr-1" />
-                <span>۳٪ کاهش</span>
+                <span>{dashboardData?.usersGrowth}٪ کاهش</span>
               </div>
             </div>
             <div className="bg-amber-50 p-2 rounded-lg">

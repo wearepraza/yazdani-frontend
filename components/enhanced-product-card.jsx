@@ -1,213 +1,227 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Heart, ShoppingCart, Star, Loader2, Check, Minus } from "lucide-react"
-import { STORAGE } from "@/lib/api/config"
-import { toggleFavoriteUser } from "@/lib/api/user/favorites/toggleFavoriteUser"
-import { addToCart as addToCartAPI } from "@/lib/api/user/cart/addToCart"
-import { removeCartItem } from "@/lib/api/user/cart/removeItemCart"
-import { useState, useEffect } from "react"
-import { useDispatch, useSelector } from 'react-redux'
-import { addToCart, removeFromCart } from '@/lib/store/cartSlice'
+import Link from "next/link";
+import { ShoppingCart, Star, Plus, Minus, Heart } from "lucide-react";
+import { STORAGE } from "@/lib/api/config";
+import { addToCart as addToCartAPI } from "@/lib/api/user/cart/addToCart";
+import { removeCartItem } from "@/lib/api/user/cart/removeItemCart";
+import { toggleFavoriteUser } from "@/lib/api/user/favorites/toggleFavoriteUser";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart, removeFromCart } from "@/lib/store/cartSlice";
+import toast from "react-hot-toast";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function EnhancedProductCard({ product, showActions = true }) {
-  const { id, title, price, discountedPrice, discount, image, isNew, rating, category } = product
-  const [isFavorite, setIsFavorite] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isAddingToCart, setIsAddingToCart] = useState(false)
-  const [isAddedToCart, setIsAddedToCart] = useState(false)
-  
-  const dispatch = useDispatch()
-  const cartItems = useSelector((state) => state.cart.items)
-  const isInCart = cartItems.some(item => item.id === id)
+  const { id, title, price, discountedPrice, discount, image, isNew, rating } =
+    product;
 
-  const hasDiscount = discount > 0
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cart.items);
+  const itemInCart = cartItems.find((item) => item.product_id === id);
+  const reduxQty = itemInCart?.quantity || 0;
+  const isInCart = reduxQty > 0;
+  const hasDiscount = discount > 0;
+
+  const [localQty, setLocalQty] = useState(reduxQty);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setLocalQty(reduxQty);
+  }, [reduxQty]);
+
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+    const optimisticQty = localQty + 1;
+    setLocalQty(optimisticQty);
+
+    dispatch(
+      addToCart({
+        product_id: id,
+        quantity: optimisticQty,
+        product,
+      })
+    );
+
+    try {
+      const response = await addToCartAPI({
+        product_id: id,
+        quantity: optimisticQty,
+      });
+      const realQty = response.data?.item?.quantity || optimisticQty;
+      if (realQty !== optimisticQty) {
+        setLocalQty(realQty);
+        dispatch(addToCart({ product_id: id, quantity: realQty, product }));
+      }
+    } catch (err) {
+      setLocalQty(localQty);
+      dispatch(addToCart({ product_id: id, quantity: localQty, product }));
+      toast.error("خطا در افزودن به سبد خرید");
+    }
+  };
+
+  const handleRemoveFromCart = async (e) => {
+    e.preventDefault();
+    if (localQty <= 0) return;
+    const newQty = localQty - 1;
+    setLocalQty(newQty);
+
+    if (newQty === 0) {
+      dispatch(removeFromCart(id));
+      try {
+        await removeCartItem({ product_id: id });
+      } catch (err) {
+        setLocalQty(localQty);
+        dispatch(addToCart({ product_id: id, quantity: localQty, product }));
+        toast.error("خطا در حذف محصول");
+      }
+      return;
+    }
+
+    dispatch(
+      addToCart({
+        product_id: id,
+        quantity: newQty,
+        product,
+      })
+    );
+
+    try {
+      await addToCartAPI({ product_id: id, quantity: newQty });
+    } catch (err) {
+      setLocalQty(localQty);
+      dispatch(addToCart({ product_id: id, quantity: localQty, product }));
+      toast.error("خطا در کاهش تعداد");
+    }
+  };
 
   const handleFavoriteToggle = async (e) => {
-    e.preventDefault()
-    if (isLoading) return
+    e.preventDefault();
+    if (isLoading) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await toggleFavoriteUser(id)
-      if (!response.error) {
-        setIsFavorite(!isFavorite)
-      }
-    } catch (error) {
-      console.error("Error toggling favorite:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleCartAction = async (e) => {
-    e.preventDefault()
-    if (isAddingToCart) return
-
-    setIsAddingToCart(true)
-    setIsAddedToCart(false)
-    try {
-      if (isInCart) {
-        // Remove from cart
-        const response = await removeCartItem({ product_id: id })
-        if (!response.error) {
-          dispatch(removeFromCart(id))
-        } else {
-          console.error("Error removing from cart:", response.message)
-        }
+      const response = await toggleFavoriteUser(id);
+      if (response?.data && !response.error) {
+        setIsFavorite((prev) => !prev);
       } else {
-        // Add to cart
-        const payload = {
-          product_id: id,
-          quantity: 1
-        }
-        const response = await addToCartAPI(payload)
-        if (!response.error) {
-          dispatch(addToCart({
-            id,
-            title,
-            price: discountedPrice || price,
-            image,
-            quantity: 1
-          }))
-          setIsAddedToCart(true)
-          // Reset success state after 2 seconds
-          setTimeout(() => {
-            setIsAddedToCart(false)
-          }, 2000)
-        } else {
-          console.error("Error adding to cart:", response.message)
-        }
+        toast.error("خطا در تغییر وضعیت علاقه‌مندی");
       }
     } catch (error) {
-      console.error("Error with cart action:", error)
+      console.error("Error toggling favorite:", error);
+      toast.error("اتصال به سرور برقرار نشد");
     } finally {
-      setIsAddingToCart(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="group relative overflow-hidden rounded-lg bg-white shadow-md transition-all duration-300 hover:shadow-lg h-[420px]">
-      {/* New badge */}
-      {isNew && (
-        <div className="absolute right-2 top-2 z-10 rounded-full bg-blue-500 px-2 py-1 text-xs font-bold text-white">
-          جدید
-        </div>
-      )}
+    <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden transition hover:shadow-md group">
+      <Link href={`/products/${id}`} className="block relative">
+        <div className="relative h-52 md:h-64 overflow-hidden group">
+          <img
+            src={
+              image
+                ? `${STORAGE}${image}`
+                : "/placeholder.svg?height=192&width=256&query=product"
+            }
+            alt={title}
+            className="h-full w-full object-contain bg-gray-50 transition-transform duration-500 group-hover:scale-105"
+          />
 
-      {/* Discount badge */}
-      {hasDiscount && (
-        <div className="absolute left-2 top-2 z-10 rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white">
-          {discount}% تخفیف
-        </div>
-      )}
-
-      {/* Image container with hover effect */}
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={image ? `${STORAGE}${image}` : "/placeholder.svg?height=192&width=256&query=product"}
-          alt={title}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
-
-        {/* Quick action buttons that appear on hover */}
-        {showActions && (
-          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            {/* <Link href={`/products/${id}`}>
-              <button className="rounded-full bg-white p-2 text-gray-800 transition-colors hover:bg-blue-500 hover:text-white">
-                <Star className="h-5 w-5" />
+          {showActions && (
+            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <button
+                onClick={handleFavoriteToggle}
+                disabled={isLoading}
+                className={`rounded-full bg-white p-2 transition-colors hover:bg-blue-500 hover:text-white ${
+                  isFavorite ? "text-red-500 hover:text-white" : "text-gray-800"
+                }`}
+              >
+                <Heart
+                  className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`}
+                />
               </button>
-            </Link> */}
-            <button 
-              onClick={handleFavoriteToggle}
-              disabled={isLoading}
-              className={`rounded-full bg-white p-2 transition-colors hover:bg-blue-500 hover:text-white ${
-                isFavorite ? "text-red-500 hover:text-white" : "text-gray-800"
-              }`}
-            >
-              <Heart className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`} />
-            </button>
-            <button 
-              onClick={handleCartAction}
-              disabled={isAddingToCart}
-              className={`rounded-full bg-white p-2 transition-colors hover:bg-blue-500 hover:text-white ${
-                isAddedToCart ? "text-green-500" : isInCart ? "text-red-500" : "text-gray-800"
-              }`}
-            >
-              {isAddingToCart ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : isAddedToCart ? (
-                <Check className="h-5 w-5" />
-              ) : isInCart ? (
-                <Minus className="h-5 w-5" />
-              ) : (
-                <ShoppingCart className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      </Link>
 
-      {/* Product info */}
       <div className="p-4">
-        {/* Category */}
-        <div className="mb-1 text-xs font-medium text-gray-500">{category}</div>
-
-        {/* Title */}
-        <Link href={`/products/${id}`}>
-          <h3 className="mb-2 text-sm font-bold text-gray-800 transition-colors hover:text-blue-600 md:text-base">
+        <Link
+          href={`/products/${id}`}
+          className="block hover:text-primary transition"
+        >
+          <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 min-h-[48px]">
             {title}
           </h3>
         </Link>
 
-        {/* Rating */}
-        <div className="mb-2 flex items-center">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`h-4 w-4 ${i < Math.floor(rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
-            />
-          ))}
-          <span className="mr-1 text-xs text-gray-500">({rating})</span>
-        </div>
+        {rating && (
+          <div className="flex items-center gap-1 mb-2">
+            <Star size={14} className="text-amber-500" />
+            <span className="text-xs text-gray-600">{rating}</span>
+          </div>
+        )}
 
-        {/* Price */}
-        <div className="flex items-center justify-between absolute bottom-4 left-4 right-4">
+        <div className="flex items-center justify-between mt-3">
           <div>
-            {hasDiscount ? (
-              <div className="flex flex-col items-end">
-                <span className="text-xs font-medium text-gray-500 line-through">{price.toLocaleString()} تومان</span>
-                <span className="text-base font-bold text-blue-600">{discountedPrice.toLocaleString()} تومان</span>
+            {hasDiscount && (
+              <div className="text-gray-400 line-through text-xs mb-1">
+                {price} تومان
               </div>
-            ) : (
-              <span className="text-base font-bold text-blue-600">{price.toLocaleString()} تومان</span>
             )}
+            <div className="font-bold text-gray-900">
+              {(discountedPrice || price).toLocaleString("fa-IR")} تومان
+            </div>
           </div>
 
-          {/* Add to cart button */}
-          <button 
-            onClick={handleCartAction}
-            disabled={isAddingToCart}
-            className={`rounded-full p-2 transition-all ${
-              isAddedToCart 
-                ? "bg-green-100 text-green-600" 
-                : isInCart
-                ? "bg-red-100 text-red-600 hover:bg-red-600 hover:text-white"
-                : "bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white"
-            }`}
-          >
-            {isAddingToCart ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : isAddedToCart ? (
-              <Check className="h-5 w-5" />
-            ) : isInCart ? (
-              <Minus className="h-5 w-5" />
-            ) : (
-              <ShoppingCart className="h-5 w-5" />
-            )}
-          </button>
+          {showActions && (
+            <AnimatePresence mode="wait" initial={false}>
+              {localQty > 0 ? (
+                <motion.div
+                  key="counter"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.25 }}
+                  className="flex items-center gap-1"
+                >
+                  <button
+                    onClick={handleRemoveFromCart}
+                    className="p-2 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-white transition-colors"
+                  >
+                    <Minus size={18} />
+                  </button>
+                  <span className="text-sm font-medium w-6 text-center">
+                    {localQty}
+                  </span>
+                  <button
+                    onClick={handleAddToCart}
+                    className="p-2 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-white transition-colors"
+                  >
+                    <Plus size={18} />
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="add"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.25 }}
+                  onClick={handleAddToCart}
+                  className="p-2 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-white transition-colors"
+                >
+                  <ShoppingCart size={18} />
+                </motion.button>
+              )}
+            </AnimatePresence>
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 }
+

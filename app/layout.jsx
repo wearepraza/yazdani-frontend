@@ -2,7 +2,7 @@ import "./globals.css"
 import { Vazirmatn } from "next/font/google"
 import { UserProvider } from "@/context/user-context/UserContext"
 import { Providers } from '@/lib/providers'
-
+import { Toaster } from "react-hot-toast"
 const vazirmatn = Vazirmatn({
   subsets: ["arabic"],
   variable: "--font-vazirmatn",
@@ -19,6 +19,8 @@ export default function RootLayout({ children }) {
         <Providers>
           <UserProvider>
             {children}
+            <Toaster position="bottom-center" />
+
           </UserProvider>
         </Providers>
       </body>
