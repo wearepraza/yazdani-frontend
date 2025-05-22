@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, User } from "lucide-react"
+import { ArrowLeft, User, Eye, EyeOff } from "lucide-react"
 import Cookies from "js-cookie"
 import { sendCode } from "@/lib/api/auth/sendCode"
 import { verifyCode } from "@/lib/api/auth/verifyCode"
@@ -17,6 +17,7 @@ import {
 export default function RegisterForm({ setError }) {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const [phone, setPhone] = useState("")
   const [verificationCode, setVerificationCode] = useState(["", "", "", "", ""])
@@ -109,7 +110,7 @@ export default function RegisterForm({ setError }) {
 
     try {
       const response = await register(phone, firstName, lastName, password, invitationCode)
-
+console.log(response)
       if (
         response.error ||
         !response.data ||
@@ -240,13 +241,26 @@ export default function RegisterForm({ setError }) {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">رمز عبور</label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="رمز عبور"
-              className={passwordError ? "border-destructive" : ""}
-            />
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="رمز عبور"
+                className={`pr-0 ${passwordError ? "border-destructive" : ""}`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
             {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
           </div>
 
@@ -275,7 +289,7 @@ export default function RegisterForm({ setError }) {
             />
             <label htmlFor="acceptRules" className="text-sm">
               با{" "}
-              <a href="/rules" target="_blank" className="text-blue-600 underline">
+              <a href="/terms" target="_blank" className="text-blue-600 underline">
                 قوانین و مقررات
               </a>{" "}
               موافقم

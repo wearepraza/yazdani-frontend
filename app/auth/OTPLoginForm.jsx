@@ -10,7 +10,7 @@ import { verifyCode } from "@/lib/api/auth/verifyCode"
 import { validatePhoneNumber, validateVerificationCode } from "@/lib/validation"
 
 export default function OTPLoginForm({ onSwitchMode, setError }) {
-  const [step, setStep] = useState(1) // 1: phone, 2: code
+  const [step, setStep] = useState(1)
   const [phone, setPhone] = useState("")
   const [code, setCode] = useState(["", "", "", "", ""])
   const [loading, setLoading] = useState(false)
@@ -64,7 +64,6 @@ export default function OTPLoginForm({ onSwitchMode, setError }) {
 
       if (response?.status === 200 && response.data) {
         if (response.data.status === "new") {
-          // New user → redirect to register
           onSwitchMode("register")
         } else if (response.data.status === "existing") {
           const token = response.data.token

@@ -58,8 +58,8 @@ console.log(response)
   }
 
   return (
-    <form onSubmit={handleSubmit} className="px-6 space-y-4 pb-6">
-      <div className="space-y-2">
+    <form onSubmit={handleSubmit} className="px-6 space-y-2 pb-6">
+      <div className="space-y-1">
         <label className="text-sm font-medium">شماره موبایل</label>
         <Input
           type="tel"
@@ -72,7 +72,7 @@ console.log(response)
         {phoneError && <p className="text-sm text-destructive">{phoneError}</p>}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1">
         <label className="text-sm font-medium">رمز عبور</label>
         <div className="relative">
           <Input
@@ -97,7 +97,7 @@ console.log(response)
         {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
       </div>
 
-      <Button type="submit" className="w-full mt-4" disabled={loading}>
+      <Button type="submit" className="w-full mt-5" disabled={loading}>
         {loading ? "در حال ورود..." : (
           <>
             <ArrowLeft className="h-4 w-4 ml-2" />

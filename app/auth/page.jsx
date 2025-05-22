@@ -21,7 +21,7 @@ export default function AuthPage() {
       case "login":
         return { title: "ورود به حساب", description: "شماره موبایل و رمز عبور خود را وارد کنید" }
       case "otp":
-        return { title: "ورود با رمز یک‌بار مصرف", description: "کد تایید را وارد کنید" }
+        return { title: "ورود با رمز یک‌بار مصرف", description: "شماره موبایل و سپس کد تایید را وارد کنید" }
       case "register":
         return { title: "ثبت‌نام", description: "اطلاعات خود را وارد کنید" }
     }
