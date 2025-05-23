@@ -22,7 +22,7 @@ import { toggleFavoriteUser } from "@/lib/api/user/favorites/toggleFavoriteUser"
 import { toast } from "react-hot-toast";
 import Loading from "./loading";
 import ProductGallery from "@/components/productGallery";
-
+import { roleCheck } from "@/lib/api/user/roleCheck";
 export default function ProductDetailPage({ params }) {
   const resolvedParams = use(params);
   const [product, setProduct] = useState(null);
@@ -57,7 +57,13 @@ export default function ProductDetailPage({ params }) {
       });
     }
   };
-
+  useEffect(() => {
+    const checkRole = async () => {
+      const response = await roleCheck();
+      console.log(response);
+    };
+    checkRole();
+  }, []);
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {

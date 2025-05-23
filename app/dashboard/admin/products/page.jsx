@@ -219,7 +219,7 @@ export default function ProductsPage() {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-2">
-                          <Link href={`/dashboard/admin/products/${product.id}`}>
+                          <Link href={`/products/${product.id}`}>
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                               <Eye size={16} className="text-gray-500" />
                             </Button>
