@@ -1,3 +1,8 @@
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'react-image-lightbox/style.css'
+import 'react-medium-image-zoom/dist/styles.css'
+
 import "./globals.css"
 import { Vazirmatn } from "next/font/google"
 import { UserProvider } from "@/context/user-context/UserContext"
