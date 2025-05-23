@@ -59,10 +59,9 @@ export default function AdminDashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-500 text-sm">فروش امروز</p>
-              <p className="text-2xl font-bold mt-1">{dashboardData?.todaySales?.toLocaleString('fa-IR')} تومان</p>
-              <div className="flex items-center mt-2 text-green-600 text-sm">
-                <ArrowUpRight size={14} className="mr-1" />
-                <span>{dashboardData?.salesGrowth}٪ افزایش</span>
+              <p className="text-2xl font-bold mt-1">{dashboardData?.today_sales?.toLocaleString('fa-IR')} تومان</p>
+              <div className="flex items-center mt-2 text-gray-500 text-sm">
+                <span>بدون تغییر نسبت به دیروز</span>
               </div>
             </div>
             <div className="bg-blue-50 p-2 rounded-lg">
@@ -75,10 +74,9 @@ export default function AdminDashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-500 text-sm">سفارش‌های جدید</p>
-              <p className="text-2xl font-bold mt-1">{dashboardData?.newOrders}</p>
-              <div className="flex items-center mt-2 text-green-600 text-sm">
-                <ArrowUpRight size={14} className="mr-1" />
-                <span>{dashboardData?.ordersGrowth}٪ افزایش</span>
+              <p className="text-2xl font-bold mt-1">{dashboardData?.new_orders_today}</p>
+              <div className="flex items-center mt-2 text-gray-500 text-sm">
+                <span>سفارش امروز</span>
               </div>
             </div>
             <div className="bg-green-50 p-2 rounded-lg">
@@ -91,9 +89,9 @@ export default function AdminDashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-500 text-sm">محصولات</p>
-              <p className="text-2xl font-bold mt-1">{dashboardData?.totalProducts}</p>
+              <p className="text-2xl font-bold mt-1">{dashboardData?.total_products}</p>
               <div className="flex items-center mt-2 text-gray-500 text-sm">
-                <span>{dashboardData?.lowStockProducts} محصول کم‌موجود</span>
+                <span>{dashboardData?.low_stock_products} محصول کم‌موجود</span>
               </div>
             </div>
             <div className="bg-purple-50 p-2 rounded-lg">
@@ -106,10 +104,9 @@ export default function AdminDashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-500 text-sm">کاربران جدید</p>
-              <p className="text-2xl font-bold mt-1">{dashboardData?.newUsers}</p>
-              <div className="flex items-center mt-2 text-red-600 text-sm">
-                <ArrowDownRight size={14} className="mr-1" />
-                <span>{dashboardData?.usersGrowth}٪ کاهش</span>
+              <p className="text-2xl font-bold mt-1">{dashboardData?.new_users_today}</p>
+              <div className="flex items-center mt-2 text-gray-500 text-sm">
+                <span>کاربر امروز</span>
               </div>
             </div>
             <div className="bg-amber-50 p-2 rounded-lg">
@@ -145,54 +142,28 @@ export default function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">#۱۲۳۴۵</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">علی محمدی</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">گوشی موبایل سامسونگ</td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">۱۲,۵۰۰,۰۰۰ تومان</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                      تکمیل شده
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">۱۴۰۲/۰۸/۱۵</td>
-                </tr>
-                <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">#۱۲۳۴۶</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">مریم احمدی</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">لپ تاپ ایسوس</td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">۳۵,۸۰۰,۰۰۰ تومان</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-                      در حال پردازش
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">۱۴۰۲/۰۸/۱۵</td>
-                </tr>
-                <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">#۱۲۳۴۷</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">رضا کریمی</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">هدفون بی سیم</td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">۲,۸۰۰,۰۰۰ تومان</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                      ارسال شده
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">۱۴۰۲/۰۸/۱۴</td>
-                </tr>
-                <tr className="border-b-0 hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">#۱۲۳۴۸</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">سارا حسینی</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">ساعت هوشمند</td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">۴,۵۰۰,۰۰۰ تومان</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                      لغو شده
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">۱۴۰۲/۰۸/۱۴</td>
-                </tr>
+                {dashboardData?.recent_orders?.map((order) => (
+                  <tr key={order.order_number} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{order.order_number}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{order.user_name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{order.product_name}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{order.total_amount?.toLocaleString('fa-IR')} تومان</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                        order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                        order.status === 'processing' ? 'bg-amber-100 text-amber-700' :
+                        order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {order.status === 'completed' ? 'تکمیل شده' :
+                         order.status === 'processing' ? 'در حال پردازش' :
+                         order.status === 'shipped' ? 'ارسال شده' :
+                         'لغو شده'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{order.created_at}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -212,53 +183,29 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                <span className="text-blue-600 font-bold">ع</span>
-              </div>
-              <div>
-                <p className="font-medium">علی محمدی</p>
-                <p className="text-sm text-gray-500">عضویت: امروز</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                <span className="text-purple-600 font-bold">م</span>
-              </div>
-              <div>
-                <p className="font-medium">مریم احمدی</p>
-                <p className="text-sm text-gray-500">عضویت: امروز</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                <span className="text-green-600 font-bold">ر</span>
-              </div>
-              <div>
-                <p className="font-medium">رضا کریمی</p>
-                <p className="text-sm text-gray-500">عضویت: دیروز</p>
+          {dashboardData?.new_users?.map((user, index) => (
+            <div key={index} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className={`w-12 h-12 rounded-full ${
+                  index % 4 === 0 ? 'bg-blue-100' :
+                  index % 4 === 1 ? 'bg-purple-100' :
+                  index % 4 === 2 ? 'bg-green-100' :
+                  'bg-amber-100'
+                } flex items-center justify-center`}>
+                  <span className={`font-bold ${
+                    index % 4 === 0 ? 'text-blue-600' :
+                    index % 4 === 1 ? 'text-purple-600' :
+                    index % 4 === 2 ? 'text-green-600' :
+                    'text-amber-600'
+                  }`}>{user.name.charAt(0)}</span>
+                </div>
+                <div>
+                  <p className="font-medium">{user.name}</p>
+                  <p className="text-sm text-gray-500">عضویت: {user.registered_at.replace('days ago', 'روز پیش')}</p>
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                <span className="text-amber-600 font-bold">س</span>
-              </div>
-              <div>
-                <p className="font-medium">سارا حسینی</p>
-                <p className="text-sm text-gray-500">عضویت: دیروز</p>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>

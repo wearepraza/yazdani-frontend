@@ -175,6 +175,11 @@ export default function EnhancedProductCard({ product, showActions = true }) {
             <div className="font-bold text-gray-900">
               {(discountedPrice || price).toLocaleString("fa-IR")} تومان
             </div>
+            {product.max_discount && (
+              <div className="text-red-500 text-xs mt-1">
+                با خرید کارت، تا سقف {product.max_discount.toLocaleString("fa-IR")} تومان تخفیف بگیرید
+              </div>
+            )}
           </div>
 
           {showActions && (

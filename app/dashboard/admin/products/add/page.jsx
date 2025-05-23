@@ -15,6 +15,7 @@ export default function AddProductPage() {
     description: "",
     price: "",
     discount_price: "",
+    max_discount: "",
     category_id: "",
     inventory: "",
     status: "published",
@@ -223,6 +224,18 @@ export default function AddProductPage() {
                     onChange={handleChange}
                     placeholder="تعداد موجودی"
                     required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="maxDiscount" className="block text-sm font-medium text-gray-700 mb-1">
+                    حداکثر تخفیف (تومان)
+                  </label>
+                  <Input
+                    id="maxDiscount"
+                    name="max_discount"
+                    value={productData.max_discount}
+                    onChange={handleChange}
+                    placeholder="حداکثر تخفیف"
                   />
                 </div>
               </div>
