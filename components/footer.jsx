@@ -8,6 +8,7 @@ export function Footer() {
     <footer className="bg-gray-900 text-white pt-16 pb-6">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          {/* Column 1: Logo and Description */}
           <div>
             <Logo size="large" />
             <p className="mt-4 text-gray-400">
@@ -47,6 +48,7 @@ export function Footer() {
             </div>
           </div>
 
+          {/* Column 2: Quick Links */}
           <div>
             <h3 className="text-lg font-bold mb-6 relative inline-block">
               دسترسی سریع
@@ -54,99 +56,21 @@ export function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link
-                  href="/home"
-                  className="text-gray-400 hover:text-amber-400 transition-colors"
-                >
-                  صفحه اصلی
-                </Link>
+                <Link href="/home" className="text-gray-400 hover:text-amber-400 transition-colors">صفحه اصلی</Link>
               </li>
               <li>
-                <Link
-                  href="/products"
-                  className="text-gray-400 hover:text-amber-400 transition-colors"
-                >
-                  محصولات
-                </Link>
-              </li>
-              {/* <li>
-                <Link href="/products/discounts" className="text-gray-400 hover:text-amber-400 transition-colors">
-                  تخفیف‌ها
-                </Link>
-              </li> */}
-              <li>
-                <Link
-                  href="/about"
-                  className="text-gray-400 hover:text-amber-400 transition-colors"
-                >
-                  درباره ما
-                </Link>
+                <Link href="/products" className="text-gray-400 hover:text-amber-400 transition-colors">محصولات</Link>
               </li>
               <li>
-                <Link
-                  href="/contact"
-                  className="text-gray-400 hover:text-amber-400 transition-colors"
-                >
-                  تماس با ما
-                </Link>
-              </li>
-              {/* <li>
-                  <Link href="/faq" className="text-gray-400 hover:text-amber-400 transition-colors">
-                    سوالات متداول
-                  </Link>
-                </li> */}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-bold mb-6 relative inline-block">
-              خدمات مشتریان
-              <span className="absolute -bottom-2 right-0 w-12 h-1 bg-amber-500"></span>
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/faq"
-                  className="text-gray-400 hover:text-amber-400 transition-colors"
-                >
-                  سوالات متداول
-                </Link>
+                <Link href="/about" className="text-gray-400 hover:text-amber-400 transition-colors">درباره ما</Link>
               </li>
               <li>
-                <Link
-                  href="/shipping"
-                  className="text-gray-400 hover:text-amber-400 transition-colors"
-                >
-                  شیوه‌های ارسال
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/returns"
-                  className="text-gray-400 hover:text-amber-400 transition-colors"
-                >
-                  شرایط بازگشت کالا
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/warranty"
-                  className="text-gray-400 hover:text-amber-400 transition-colors"
-                >
-                  گارانتی محصولات
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-gray-400 hover:text-amber-400 transition-colors"
-                >
-                  حریم خصوصی
-                </Link>
+                <Link href="/contact" className="text-gray-400 hover:text-amber-400 transition-colors">تماس با ما</Link>
               </li>
             </ul>
           </div>
 
+          {/* Column 3: Contact Us */}
           <div>
             <h3 className="text-lg font-bold mb-6 relative inline-block">
               تماس با ما
@@ -154,57 +78,27 @@ export function Footer() {
             </h3>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
-                <MapPin
-                  size={20}
-                  className="text-amber-500 mt-0.5 flex-shrink-0"
-                />
-                <span className="text-gray-400">
-                  تهران، خیابان ولیعصر، پلاک ۱۲۳، طبقه دوم
-                </span>
+                <MapPin size={20} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-400">تهران، خیابان ولیعصر، پلاک ۱۲۳، طبقه دوم</span>
               </li>
               <li className="flex items-start gap-3">
-                <Phone
-                  size={20}
-                  className="text-amber-500 mt-0.5 flex-shrink-0"
-                />
+                <Phone size={20} className="text-amber-500 mt-0.5 flex-shrink-0" />
                 <span className="text-gray-400">۰۲۱-۱۲۳۴۵۶۷۸</span>
               </li>
               <li className="flex items-start gap-3">
-                <Mail
-                  size={20}
-                  className="text-amber-500 mt-0.5 flex-shrink-0"
-                />
+                <Mail size={20} className="text-amber-500 mt-0.5 flex-shrink-0" />
                 <span className="text-gray-400">info@phonixo.com</span>
               </li>
             </ul>
-
-            {/* <div className="mt-8">
-              <h4 className="font-medium mb-3">عضویت در خبرنامه</h4>
-              <div className="flex">
-                <Suspense
-                  fallback={<div className="bg-gray-800 border border-gray-700 rounded-r-lg py-2 px-4 flex-1"></div>}
-                >
-                  <input
-                    type="email"
-                    placeholder="ایمیل خود را وارد کنید"
-                    className="bg-gray-800 border border-gray-700 rounded-r-lg py-2 px-4 flex-1 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                  />
-                </Suspense>
-                <button className="bg-amber-500 text-white px-4 py-2 rounded-l-lg hover:bg-amber-600 transition-colors">
-                  عضویت
-                </button>
-              </div>
-            </div> */}
           </div>
-        </div>
 
-        <div className="border-t border-gray-800 pt-8 mt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © ۱۴۰۲ فونیکسو. تمامی حقوق محفوظ است.
-            </p>
-          </div>
-            <div className="flex items-center gap-4 mt-4 md:mt-0">
+          {/* Column 4: Enamad */}
+          <div>
+            <h3 className="text-lg font-bold mb-6 relative inline-block">
+              نماد اعتماد
+              <span className="absolute -bottom-2 right-0 w-12 h-1 bg-amber-500"></span>
+            </h3>
+            <div className="flex justify-center items-start">
               <a
                 referrerPolicy="origin"
                 target="_blank"
@@ -213,12 +107,21 @@ export function Footer() {
                 <img
                   referrerPolicy="origin"
                   src="https://trustseal.enamad.ir/logo.aspx?id=612989&Code=MO9zbfWZqaBDBlzTU6etmFXoDsNKXrXi"
-                  alt=""
+                  alt="نماد اعتماد الکترونیکی"
                   style={{ cursor: "pointer" }}
-                  code="MO9zbfWZqaBDBlzTU6etmFXoDsNKXrXi"
                 />
               </a>
             </div>
+          </div>
+        </div>
+
+        {/* Footer Bottom */}
+        <div className="border-t border-gray-800 pt-8 mt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-400 text-sm">
+              © ۱۴۰۲ فونیکسو. تمامی حقوق محفوظ است.
+            </p>
+          </div>
         </div>
       </div>
     </footer>
