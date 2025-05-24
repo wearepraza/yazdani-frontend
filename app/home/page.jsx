@@ -1,60 +1,85 @@
-"use client"
+import Link from "next/link";
+import EnhancedProductCard from "@/components/enhanced-product-card";
+import ProductCarousel from "@/components/ProductCarousel";
+import { listProducts } from "@/lib/api/main/listProducts";
+import { listCategory } from "@/lib/api/main/listCategory";
 
-import Link from "next/link"
-import EnhancedProductCard from "@/components/enhanced-product-card"
-import { listProducts } from "@/lib/api/main/listProducts"
-import { listCategory } from "@/lib/api/main/listCategory"
-import { useEffect, useState } from "react"
+export default async function HomePage() {
+  let carousels = [];
+  let parentCategories = [];
 
-export default function HomePage() {
-  const [categories, setCategories] = useState([]);
-  const [parentCategories, setParentCategories] = useState([]);
-  const [featuredProducts, setFeaturedProducts] = useState([]);
+  try {
+    const [productRes, categoryRes] = await Promise.all([
+      listProducts(),
+      listCategory()
+    ]);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await listProducts();
-        if (response?.data) {
-          const products = response.data.map(product => ({
-            id: product.id,
-            title: product.title,
-            price: product.price,
-            discountedPrice: product.discount_price,
-            discount: product.discount_price ? Math.round(((product.price - product.discount_price) / product.price) * 100) : 0,
-            image: product.image_path ? `/${product.image_path}` : "/placeholder.svg",
-            isNew: true,
-            rating: 4.5,
-            category: product.category?.name || "بدون دسته‌بندی",
-          }));
-          setFeaturedProducts(products.slice(0, 8));
-        }
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
+    const allProducts = productRes?.data || [];
+    const categories = categoryRes?.data?.categories || [];
 
-    const fetchCategories = async () => {
-      try {
-        const response = await listCategory();
-        if (response?.data?.categories) {
-          setCategories(response.data.categories);
-          const parents = response.data.categories.filter(cat => cat.parent_id === null);
-          setParentCategories(parents);
-        }
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
+    parentCategories = categories.filter(cat => cat.parent_id === null);
 
-    fetchProducts();
-    fetchCategories();
-  }, []);
+  carousels = parentCategories.map(parent => {
+  const subIds = categories
+    .filter(c => c.parent_id === parent.id)
+    .map(c => c.id);
+  const relevantIds = [parent.id, ...subIds];
+
+  const products = allProducts.filter(p =>
+    relevantIds.includes(p.category_id)
+  ).slice(0, 8);
+
+  const normalized = products.map(product => ({
+    id: product.id,
+    title: product.title,
+    price: product.price,
+    discountedPrice: product.discount_price,
+    discount: product.discount_price
+      ? Math.round(((product.price - product.discount_price) / product.price) * 100)
+      : 0,
+    image: product.image_path ? `/${product.image_path}` : "/placeholder.svg",
+    isNew: true,
+    rating: 4.5,
+    category: product.category?.name || "بدون دسته‌بندی",
+  }));
+
+  return {
+    title: parent.name,
+    categoryId: parent.id,
+    products: normalized
+  };
+});
+
+
+    // آخرین کاروسل: همه محصولات
+    const allNormalized = allProducts.slice(0, 12).map(product => ({
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      discountedPrice: product.discount_price,
+      discount: product.discount_price
+        ? Math.round(((product.price - product.discount_price) / product.price) * 100)
+        : 0,
+      image: product.image_path ? `/${product.image_path}` : "/placeholder.svg",
+      isNew: true,
+      rating: 4.5,
+      category: product.category?.name || "بدون دسته‌بندی",
+    }));
+
+    carousels.push({
+      title: "همه محصولات",
+      products: allNormalized
+    });
+
+  } catch (error) {
+    console.error("Error loading home page:", error);
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
+
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 py-16 text-white">
+      <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 py-16 md:px-12 text-white">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
             <div className="text-center md:text-right md:w-1/2">
@@ -73,16 +98,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="py-12">
+      {/* بخش دسته‌بندی‌ها (فقط parent) */}
+      <section className="py-12 md:px-12">
         <div className="container mx-auto px-4">
           <h2 className="mb-8 text-center text-2xl font-bold text-gray-800 md:text-3xl">دسته‌بندی محصولات</h2>
-
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-            {parentCategories.map((category) => (
+            {parentCategories.map(category => (
               <Link href={`/products?category=${category.id}`} key={category.id}>
                 <div className="group flex flex-col items-center rounded-lg bg-white p-4 text-center shadow-md transition-all hover:shadow-lg">
-                  <div className="mb-3 h-16 w-16 rounded-full bg-blue-100 p-3 transition-all group-hover:bg-blue-200">
+                  <div className="mb-3 h-16 w-16 rounded-full bg-blue-100 p-3 group-hover:bg-blue-200">
                     <img
                       src={`/abstract-geometric-shapes.png?height=64&width=64&query=${category.name}`}
                       alt={category.name}
@@ -97,65 +121,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products Section */}
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-800 md:text-3xl">محصولات فونیکسو</h2>
-            <Link href="/products" className="text-blue-600 hover:text-blue-700">
-              مشاهده همه
-            </Link>
-          </div>
+    {carousels.map((carousel, idx) => (
+  <ProductCarousel
+    key={idx}
+    title={carousel.title}
+    products={carousel.products}
+    categoryId={carousel.categoryId}
+  />
+))}
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {featuredProducts && featuredProducts.length > 0 ? (
-              featuredProducts.map((product) => (
-                <EnhancedProductCard key={product.id} product={product} />
-              ))
-            ) : (
-              <div className="col-span-full text-center text-gray-500">
-                محصولی یافت نشد
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
 
-      {/* Test Section - Reuse Featured Products as Mobile Accessories */}
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-800 md:text-3xl">لوازم جانبی موبایل</h2>
-            <Link href="/products?tag=mobile-accessories" className="text-blue-600 hover:text-blue-700">
-              مشاهده همه
-            </Link>
-          </div>
-
-          {/* Desktop Grid */}
-          <div className="hidden sm:grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {featuredProducts && featuredProducts.length > 0 ? (
-              featuredProducts.map((product) => (
-                <EnhancedProductCard key={product.id} product={product} />
-              ))
-            ) : (
-              <div className="col-span-full text-center text-gray-500">
-                محصولی یافت نشد
-              </div>
-            )}
-          </div>
-
-          {/* Mobile Swipeable Row */}
-          <div className="sm:hidden overflow-x-auto pb-4">
-            <div className="flex gap-4 w-max px-1">
-              {featuredProducts.map((product) => (
-                <div key={product.id} className="min-w-[220px] max-w-[240px]">
-                  <EnhancedProductCard product={product} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

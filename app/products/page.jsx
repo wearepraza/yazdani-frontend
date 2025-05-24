@@ -1,19 +1,23 @@
-// app/products/page.jsx
-import EnhancedProductCard from "@/components/enhanced-product-card"
+import ProductsClient from "./ProductsClient"
 import { listProducts } from "@/lib/api/main/listProducts"
 import { listCategory } from "@/lib/api/main/listCategory"
-import ProductsClient from "@/app/products/ProductsClient"
 
-export const dynamic = "force-dynamic" // SSR فعال
+export default async function ProductsPage({ searchParams }) {
+  const categoryFromURL = searchParams?.category || "all";
 
-export default async function ProductsPage() {
-  const productsRes = await listProducts()
-  const categoriesRes = await listCategory()
+  const [productRes, categoryRes] = await Promise.all([
+    listProducts(),
+    listCategory()
+  ]);
 
-  const products = productsRes?.data || []
-  const categories = categoriesRes?.data?.categories || []
+  const products = productRes?.data || [];
+  const categories = categoryRes?.data?.categories || [];
 
   return (
-    <ProductsClient products={products} categories={categories} />
-  )
+    <ProductsClient
+      products={products}
+      categories={categories}
+      initialCategoryId={categoryFromURL}
+    />
+  );
 }
