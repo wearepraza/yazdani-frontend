@@ -14,6 +14,7 @@ import { checkoutCart } from '@/lib/api/user/cart/checkoutCart'
 
 export default function CartPageClient() {
   const [loading, setLoading] = useState(true)
+  const [redirecting, setRedirecting] = useState(false)
   const dispatch = useDispatch()
   const cartItems = useSelector((state) => state.cart.items)
   const totalAmount = useSelector((state) => state.cart.totalAmount)
@@ -78,16 +79,32 @@ export default function CartPageClient() {
 
   const handleCheckout = async () => {
     try {
+      setRedirecting(true)
+
       const response = await checkoutCart()
-      console.log(response)
-      if (response.error) {
-        console.error('Checkout error:', response.message)
+      console.log("Checkout response:", response)
+
+      const paymentUrl = response?.data?.payment_url?.action
+
+      if (paymentUrl) {
+        window.location.href = paymentUrl
       } else {
-        console.log('Checkout successful:', response)
+        setRedirecting(false)
+        console.error('Checkout error: No payment URL provided.')
       }
     } catch (error) {
+      setRedirecting(false)
       console.error('Error during checkout:', error)
     }
+  }
+
+  if (redirecting) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+        <p className="text-lg font-semibold text-primary">در حال انتقال به درگاه پرداخت...</p>
+      </div>
+    )
   }
 
   if (loading) {
