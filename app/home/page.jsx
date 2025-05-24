@@ -1,8 +1,9 @@
 "use client"
+
 import Link from "next/link"
 import EnhancedProductCard from "@/components/enhanced-product-card"
-import {listProducts} from "@/lib/api/main/listProducts"
-import { listCategory } from "@/lib/api/main/listCategory";
+import { listProducts } from "@/lib/api/main/listProducts"
+import { listCategory } from "@/lib/api/main/listCategory"
 import { useEffect, useState } from "react"
 
 export default function HomePage() {
@@ -14,9 +15,7 @@ export default function HomePage() {
     const fetchProducts = async () => {
       try {
         const response = await listProducts();
-        console.log("Products response:", response); // Debug log
         if (response?.data) {
-          // Transform the API data to match the product card format
           const products = response.data.map(product => ({
             id: product.id,
             title: product.title,
@@ -28,13 +27,13 @@ export default function HomePage() {
             rating: 4.5,
             category: product.category?.name || "بدون دسته‌بندی",
           }));
-          console.log("Transformed products:", products); // Debug log
-          setFeaturedProducts(products);
+          setFeaturedProducts(products.slice(0, 8));
         }
       } catch (error) {
         console.error("Error fetching products:", error);
       }
     };
+
     const fetchCategories = async () => {
       try {
         const response = await listCategory();
@@ -110,7 +109,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {featuredProducts && featuredProducts.length > 0 ? (
-              featuredProducts.slice(0, 8).map((product) => (
+              featuredProducts.map((product) => (
                 <EnhancedProductCard key={product.id} product={product} />
               ))
             ) : (
@@ -122,28 +121,41 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Banner Section */}
-      {/* <section className="py-12 bg-gray-50">
+      {/* Test Section - Reuse Featured Products as Mobile Accessories */}
+      <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
-          <div className="overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg">
-            <div className="flex flex-col items-center justify-between gap-6 p-8 md:flex-row">
-              <div className="text-center md:text-right md:w-1/2">
-                <h2 className="mb-4 text-2xl font-bold text-white md:text-3xl">تخفیف‌های ویژه تابستانی</h2>
-                <p className="mb-6 text-white/90">تا ۳۰٪ تخفیف روی محصولات منتخب فقط تا پایان ماه</p>
-                <Link href="/products">
-                  <button className="rounded-lg bg-white px-6 py-3 font-bold text-blue-600 transition-all hover:bg-blue-50">
-                    مشاهده تخفیف‌ها
-                  </button>
-                </Link>
+          <div className="mb-8 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-800 md:text-3xl">لوازم جانبی موبایل</h2>
+            <Link href="/products?tag=mobile-accessories" className="text-blue-600 hover:text-blue-700">
+              مشاهده همه
+            </Link>
+          </div>
+
+          {/* Desktop Grid */}
+          <div className="hidden sm:grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {featuredProducts && featuredProducts.length > 0 ? (
+              featuredProducts.map((product) => (
+                <EnhancedProductCard key={product.id} product={product} />
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500">
+                محصولی یافت نشد
               </div>
-              <div className="md:w-1/2">
-                <img src="/placeholder.svg?key=dm3kz" alt="تخفیف تابستانی" className="rounded-lg" />
-              </div>
+            )}
+          </div>
+
+          {/* Mobile Swipeable Row */}
+          <div className="sm:hidden overflow-x-auto pb-4">
+            <div className="flex gap-4 w-max px-1">
+              {featuredProducts.map((product) => (
+                <div key={product.id} className="min-w-[220px] max-w-[240px]">
+                  <EnhancedProductCard product={product} />
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </section> */}
-
+      </section>
     </div>
-  )
+  );
 }
