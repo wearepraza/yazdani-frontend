@@ -56,9 +56,9 @@ export default function AuthPage() {
           {mode !== "login" && mode !== "register" && (
             <Button variant="link" onClick={() => handleModeChange("login")}>ورود با رمز عبور</Button>
           )}
-          {mode !== "otp" && mode !== "register" && (
+          {/* {mode !== "otp" && mode !== "register" && (
             <Button variant="link" onClick={() => handleModeChange("otp")}>رمز عبور را فراموش کرده‌اید؟</Button>
-          )}
+          )} */}
           {mode !== "register" && (
             <Button variant="link" onClick={() => handleModeChange("register")}>ثبت‌نام</Button>
           )}
