@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function EnhancedProductCard({ product, showActions = true }) {
-  const { id, title, price, discountedPrice, discount, image, isNew, rating } =
+  const { id, title, price, discountedPrice, discount, image, isNew, rating ,maxDiscount} =
     product;
 
   const dispatch = useDispatch();
@@ -26,7 +26,6 @@ export default function EnhancedProductCard({ product, showActions = true }) {
   const [localQty, setLocalQty] = useState(reduxQty);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   useEffect(() => {
     setLocalQty(reduxQty);
   }, [reduxQty]);
@@ -175,11 +174,11 @@ export default function EnhancedProductCard({ product, showActions = true }) {
             <div className="font-bold text-gray-900">
               {(discountedPrice || price).toLocaleString("fa-IR")} تومان
             </div>
-            {product.max_discount && (
-              <div className="text-red-500 text-xs mt-1">
-                با خرید کارت، تا سقف {product.max_discount.toLocaleString("fa-IR")} تومان تخفیف بگیرید
+            {maxDiscount && maxDiscount !== "0" && maxDiscount > 0 ? (
+              <div className="text-red-500 text-xs mt-2">
+                با خرید کارت، تا سقف {maxDiscount.toLocaleString("fa-IR")} تومان تخفیف بگیرید
               </div>
-            )}
+            ) : null}
           </div>
 
           {showActions && (

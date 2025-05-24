@@ -17,7 +17,6 @@ export default function ProductsClient({ products, categories }) {
   const [showOnlyDiscounted, setShowOnlyDiscounted] = useState(false)
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false)
   const [sortBy, setSortBy] = useState("newest")
-
   const transformedCategories = [
     { id: "all", name: "همه محصولات" },
     ...categories.map(cat => ({ id: cat.id.toString(), name: cat.name }))
@@ -157,6 +156,7 @@ export default function ProductsClient({ products, categories }) {
                   inventory: product.inventory,
                   category: product.category?.name || "",
                   description: product.description,
+                  maxDiscount: product.max_discount,
                 }}
               />
             ))}
