@@ -14,14 +14,22 @@ export default function ProductCarousel({ products, title, categoryId }) {
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
           {categoryId && (
-            <Link href={`/products?category=${categoryId}`} className="text-blue-600 hover:text-blue-800">
+            <Link
+              href={`/products?category=${categoryId}`}
+              className="text-blue-600 hover:text-blue-800"
+            >
               مشاهده همه
             </Link>
           )}
         </div>
+
         <Swiper
           modules={[Autoplay]}
-          autoplay={{ delay: 3000, disableOnInteraction: false }}
+          autoplay={{
+            delay: 3000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true, // ✅ توقف در صورت قرار گرفتن موس
+          }}
           loop={true}
           spaceBetween={16}
           slidesPerView={1}
@@ -32,7 +40,7 @@ export default function ProductCarousel({ products, title, categoryId }) {
           }}
         >
           {products.map((product) => (
-            <SwiperSlide key={product.id}  className="py-2">
+            <SwiperSlide key={product.id} className="py-2">
               <EnhancedProductCard product={product} />
             </SwiperSlide>
           ))}
