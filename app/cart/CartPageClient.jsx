@@ -10,6 +10,7 @@ import { getCartList } from "@/lib/api/user/cart/listCart"
 import { addToCart as addToCartAPI } from "@/lib/api/user/cart/addToCart"
 import { removeCartItem } from "@/lib/api/user/cart/removeItemCart"
 import { STORAGE } from "@/lib/api/config"
+import { checkoutCart } from '@/lib/api/user/cart/checkoutCart'
 
 export default function CartPageClient() {
   const [loading, setLoading] = useState(true)
@@ -73,6 +74,20 @@ export default function CartPageClient() {
   const formatPrice = (price) => {
     if (!price && price !== 0) return "0 تومان"
     return price.toLocaleString("fa-IR") + " تومان"
+  }
+
+  const handleCheckout = async () => {
+    try {
+      const response = await checkoutCart()
+      console.log(response)
+      if (response.error) {
+        console.error('Checkout error:', response.message)
+      } else {
+        console.log('Checkout successful:', response)
+      }
+    } catch (error) {
+      console.error('Error during checkout:', error)
+    }
   }
 
   if (loading) {
@@ -220,7 +235,7 @@ export default function CartPageClient() {
             </div>
           </div>
 
-          <button className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+          <button onClick={handleCheckout} className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
             ادامه فرآیند خرید
           </button>
 
