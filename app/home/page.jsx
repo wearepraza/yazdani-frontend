@@ -34,6 +34,7 @@ export default async function HomePage() {
     title: product.title,
     price: product.price,
     discountedPrice: product.discount_price,
+      maxDiscount: product.max_discount || 0,
     discount: product.discount_price
       ? Math.round(((product.price - product.discount_price) / product.price) * 100)
       : 0,
