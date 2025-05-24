@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Save, X, Upload, Plus, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { createProduct } from "@/lib/api/admin/product/addProduct"
+import { listCategory } from "@/lib/api/main/listCategory"
 
 export default function AddProductPage() {
   const [loading, setLoading] = useState(false)
@@ -23,14 +24,23 @@ export default function AddProductPage() {
     image: null
   })
 
-  const categories = [
-    { id: 1, name: "موبایل" },
-    { id: 2, name: "لپ تاپ" },
-    { id: 3, name: "هدفون" },
-    { id: 4, name: "تبلت" },
-    { id: 5, name: "صوتی" },
-    { id: 6, name: "پوشیدنی" }
-  ]
+  const [categories, setCategories] = useState([])
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await listCategory();
+        if (response.error) {
+          throw new Error(response.message);
+        }
+        setCategories(response?.data?.categories);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target

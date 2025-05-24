@@ -197,7 +197,7 @@ export default function AdminDashboardPage() {
                     index % 4 === 1 ? 'text-purple-600' :
                     index % 4 === 2 ? 'text-green-600' :
                     'text-amber-600'
-                  }`}>{user.name.charAt(0)}</span>
+                  }`}>{`${user.name.charAt(0)}`}</span>
                 </div>
                 <div>
                   <p className="font-medium">{user.name}</p>

@@ -291,7 +291,7 @@ const [productData, setProductData] = useState({
                 </div>
 
                 {/* Categories Display */}
-                <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                {/* <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
                   <h2 className="text-lg font-bold mb-4">دسته‌بندی محصول</h2>
                   
                   <div className="mb-6">
@@ -332,6 +332,26 @@ const [productData, setProductData] = useState({
                     </select>
                   </div>
 
+                </div> */}
+                  <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                    دسته‌بندی <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="category"
+                    name="category_id"
+                    value={productData.category_id}
+                    onChange={handleChange}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    required
+                  >
+                    <option value="">انتخاب دسته‌بندی</option>
+                    {categories.map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>

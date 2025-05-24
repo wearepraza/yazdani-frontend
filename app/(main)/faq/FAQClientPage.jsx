@@ -10,7 +10,7 @@ export default function TermsClientPage() {
 
   useEffect(() => {
     const fetchPageData = async () => {
-      const response = await detailsPages("terms")
+      const response = await detailsPages("faq")
       setPageData(response.data)
       setLoading(false)
     }

@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { updatePages } from '../../../../lib/api/admin/pages/updatePages';
 
 export default function AdminEditTermsPage() {
   const [content, setContent] =
@@ -24,8 +25,12 @@ export default function AdminEditTermsPage() {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-
-      setMessage({ text: "تغییرات با موفقیت ذخیره شد", type: "success" });
+      const response = await updatePages('agreement', pageData.title, pageData.description);
+      if (response.error) {
+        setMessage({ text: response.message, type: "error" });
+      } else {
+        setMessage({ text: "تغییرات با موفقیت ذخیره شد", type: "success" });
+      }
     } catch (error) {
       setMessage({ text: "خطا در ذخیره تغییرات", type: "error" });
     } finally {

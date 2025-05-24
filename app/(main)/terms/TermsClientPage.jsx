@@ -1,43 +1,37 @@
 "use client"
 
+import { useEffect, useState } from 'react';
+import { detailsPages } from '../../../lib/api/admin/pages/detailsPages';
+
 export default function TermsClientPage() {
-  const pageData = {
-    title: "قوانین و مقررات",
-    description: "مطالعه‌ی کامل شرایط استفاده از خدمات فروشگاه فونیکسو برای تجربه‌ای مطمئن و حرفه‌ای",
-    content: `
-      <h2 class="text-xl font-bold mb-4">مقدمه</h2>
-      <p class="mb-4">استفاده از وب‌سایت فونیکسو به منزله‌ی پذیرش شرایط و ضوابط زیر می‌باشد. لطفاً این قوانین را با دقت مطالعه فرمایید.</p>
+  const [pageData, setPageData] = useState({
+    title: '',
+    description: '',
+    content: '',
+  });
 
-      <h2 class="text-xl font-bold mb-4">۱. ثبت‌نام و حساب کاربری</h2>
-      <ul class="list-disc list-inside mb-4 space-y-2">
-        <li>کاربران برای استفاده از برخی خدمات باید در سایت ثبت‌نام کنند.</li>
-        <li>مسئولیت حفظ امنیت اطلاعات حساب کاربری بر عهده‌ی خود کاربر است.</li>
-        <li>هرگونه سوءاستفاده از حساب دیگران پیگرد قانونی دارد.</li>
-      </ul>
+  const defaultContent = `
+    <h2>قوانین و مقررات استفاده از سایت</h2>
+    <p>به وب‌سایت ما خوش آمدید. استفاده از این سایت به معنای پذیرش شرایط زیر می‌باشد:</p>
+    <ul>
+      <li>1. کاربران موظف به وارد کردن اطلاعات صحیح و کامل هنگام ثبت‌نام هستند.</li>
+      <li>2. هرگونه استفاده غیرمجاز از محتوا یا خدمات سایت پیگرد قانونی دارد.</li>
+      <li>3. سایت مجاز است در هر زمان شرایط و قوانین را تغییر دهد.</li>
+      <li>4. تمامی قیمت‌ها و موجودی‌ها ممکن است بدون اطلاع قبلی تغییر کنند.</li>
+      <li>5. استفاده از خدمات به منزله پذیرش تمامی شرایط ذکرشده می‌باشد.</li>
+    </ul>
+    <p>در صورت وجود هرگونه سوال، از طریق بخش تماس با ما در ارتباط باشید.</p>
+  `;
 
-      <h2 class="text-xl font-bold mb-4">۲. اطلاعات شخصی و حریم خصوصی</h2>
-      <p class="mb-4">اطلاعات کاربران به‌صورت محرمانه نزد فروشگاه محفوظ بوده و تنها برای پردازش سفارش و بهبود تجربه‌ی کاربری استفاده می‌شود.</p>
-
-      <h2 class="text-xl font-bold mb-4">۳. سفارش و پرداخت</h2>
-      <ul class="list-disc list-inside mb-4 space-y-2">
-        <li>پرداخت از طریق درگاه بانکی امن انجام می‌شود.</li>
-        <li>در صورت عدم تأیید نهایی سفارش توسط فروشگاه، مبلغ پرداختی به‌صورت کامل بازگردانده می‌شود.</li>
-        <li>ثبت سفارش به منزله‌ی پذیرش کامل شرایط فروشگاه می‌باشد.</li>
-      </ul>
-
-      <h2 class="text-xl font-bold mb-4">۴. ارسال و تحویل کالا</h2>
-      <p class="mb-4">کالاها معمولاً ظرف ۲۴ ساعت کاری پردازش و ارسال می‌گردند. زمان تحویل به موقعیت مکانی مشتری بستگی دارد.</p>
-
-      <h2 class="text-xl font-bold mb-4">۵. بازگشت و مرجوعی</h2>
-      <p class="mb-4">در صورت بروز مشکل در کالا، مشتری تا ۷ روز پس از دریافت کالا می‌تواند درخواست بازگشت ثبت کند، مشروط به این‌که کالا استفاده نشده و در بسته‌بندی اصلی باشد.</p>
-
-      <h2 class="text-xl font-bold mb-4">۶. محدودیت مسئولیت</h2>
-      <p class="mb-4">فروشگاه مسئول هرگونه سوءاستفاده از اطلاعات کاربر که خارج از حیطه‌ی کنترل ما باشد، نیست. همچنین تأخیر در ارسال به دلایل خارج از کنترل فروشگاه (مانند شرایط جوی یا تعطیلات رسمی) بر عهده‌ی فروشگاه نمی‌باشد.</p>
-
-      <h2 class="text-xl font-bold mb-4">۷. تغییرات در قوانین</h2>
-      <p>فروشگاه حق دارد در هر زمان قوانین و شرایط استفاده را بدون اطلاع قبلی تغییر دهد. استفاده مستمر از سایت به معنی پذیرش این تغییرات است.</p>
-    `,
-  }
+  useEffect(() => {
+    async function fetchPageDetails() {
+      const response = await detailsPages('agreement'); 
+      if (!response.error) {
+        setPageData(response.data);
+      }
+    }
+    fetchPageDetails();
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -47,10 +41,10 @@ export default function TermsClientPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-90"></div>
           <div className="relative z-10 py-20 px-8 text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              {pageData.title}
+              {pageData.title || "قوانین و مقررات"}
             </h1>
             <p className="text-xl text-white/90 max-w-3xl mx-auto">
-              {pageData.description}
+              {pageData.description || "لطفاً قبل از استفاده از خدمات سایت، قوانین زیر را مطالعه فرمایید."}
             </p>
           </div>
         </div>
@@ -59,7 +53,7 @@ export default function TermsClientPage() {
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <div
             className="leading-7 text-justify"
-            dangerouslySetInnerHTML={{ __html: pageData.content }}
+            dangerouslySetInnerHTML={{ __html: pageData.content || defaultContent }}
           />
         </div>
       </div>
