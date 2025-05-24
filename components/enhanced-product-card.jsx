@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function EnhancedProductCard({ product, showActions = true }) {
-  const { id, title, price, discountedPrice, discount, image, isNew, rating ,maxDiscount} =
+  const { id, title, price, discountedPrice, discount, image, isNew, rating, maxDiscount } =
     product;
 
   const dispatch = useDispatch();
@@ -26,9 +26,15 @@ export default function EnhancedProductCard({ product, showActions = true }) {
   const [localQty, setLocalQty] = useState(reduxQty);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
   useEffect(() => {
     setLocalQty(reduxQty);
   }, [reduxQty]);
+
+  useEffect(() => {
+    setHydrated(true); // فقط در کلاینت اجرا می‌شه
+  }, []);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -181,7 +187,7 @@ export default function EnhancedProductCard({ product, showActions = true }) {
             ) : null}
           </div>
 
-          {showActions && (
+          {showActions && hydrated && (
             <AnimatePresence mode="wait" initial={false}>
               {localQty > 0 ? (
                 <motion.div
@@ -228,4 +234,3 @@ export default function EnhancedProductCard({ product, showActions = true }) {
     </div>
   );
 }
-
